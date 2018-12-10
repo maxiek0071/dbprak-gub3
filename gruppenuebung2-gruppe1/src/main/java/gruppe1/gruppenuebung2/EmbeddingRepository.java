@@ -1,5 +1,6 @@
  package gruppe1.gruppenuebung2;
 
+import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Reader;
@@ -11,6 +12,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.postgresql.copy.CopyManager;
 import org.postgresql.core.BaseConnection;
@@ -154,9 +156,12 @@ public class EmbeddingRepository {
 
 	}
 
-	public boolean importData(Reader in) throws SQLException {
+	public boolean importData(BufferedReader in) throws SQLException {
 		String tableName = "EMBEDDINGS";
 		boolean success = false;
+		String insertStmt = "INSERT ...";
+		
+		in.lines().skip(1).map(line -> dimsToCube(insertStmt, line));
 
 		if (con != null) {
 			try {
@@ -164,13 +169,25 @@ public class EmbeddingRepository {
 				copyManager.copyIn("COPY " + tableName + " FROM STDIN CSV HEADER DELIMITER ';'", in);
 				success = true;
 			} catch (SQLException e) {
+				e.printStackTrace();
 			} catch (FileNotFoundException e) {
+				e.printStackTrace();
 			} catch (IOException e) {
+				e.printStackTrace();
 			}
 		}
 		return success;
 	}
 
+	private String dimsToCube(String base, String line) {
+		String word = line.substring(0, line.indexOf(";"));
+		String dims = line.substring(line.indexOf(";") + 1, line.lastIndexOf(';')).replace(";", ",");
+		String result = word + ";" + "cube('{" + dims + "}')";
+		return base + result;
+	}
+	
+	
+	
 	public QueryResult<Boolean> containsWord(String word) throws SQLException {
 		PreparedStatement stmt = con.prepareStatement("SELECT WORD FROM EMBEDDINGS WHERE word=?");
 		stmt.setString(1, word);

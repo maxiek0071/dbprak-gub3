@@ -24,7 +24,7 @@ public class Gruppenuebung2_Gruppe1 {
 			String srcFile = "src/main/resources/out-normalized.csv";
 			
 			
-			try(Reader in = new BufferedReader(new FileReader(new File(srcFile)));) {
+			try(BufferedReader in = new BufferedReader(new FileReader(new File(srcFile)));) {
 				// Import data to local database
 				System.out.println();
 				System.out.print("Importing embeddings into database... ");
