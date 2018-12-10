@@ -51,10 +51,10 @@ public class EmbeddingRepository {
 
 			// Create Table for Data
 			stmt = serverCon.createStatement();
-			String createTable = "CREATE TABLE EMBEDDINGS (WORD VARCHAR not NULL, ";
-			for (int i = 1; i < 301; i++) {
-				createTable = createTable.concat(" DIM" + i + " double precision,");
-			}
+			String createTable = ""
+					+ "CREATE EXTENSION IF NOT EXISTS cube; "
+					+ "CREATE TABLE EMBEDDINGS (WORD VARCHAR not NULL, vector cube, ";
+			
 			createTable = createTable.concat(" LENGTH double precision, ");
 			createTable = createTable.concat(" PRIMARY KEY (WORD)); ");
 			stmt.executeUpdate(createTable);

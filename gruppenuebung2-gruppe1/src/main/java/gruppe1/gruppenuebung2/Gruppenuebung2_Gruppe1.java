@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Scanner;
 
 
-public class Gruppenuebung1_Gruppe1 {
+public class Gruppenuebung2_Gruppe1 {
 
 	public static void main(String[] args) {
 		System.out.print("Setup: connecting to database..");
