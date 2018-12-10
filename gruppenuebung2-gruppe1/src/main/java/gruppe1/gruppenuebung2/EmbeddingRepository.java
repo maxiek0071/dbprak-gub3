@@ -183,7 +183,13 @@ public class EmbeddingRepository {
 		return base + result;
 	}
 	
-	
+	public void indexingWordColumn() {
+		try(Statement statement = con.createStatement()){
+			statement.execute("CREATE INDEX word_indexing ON embeddings USING btree(word)");
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
 	
 	public QueryResult<Boolean> containsWord(String word) throws SQLException {
 		PreparedStatement stmt = con.prepareStatement("SELECT WORD FROM EMBEDDINGS WHERE word=?");
