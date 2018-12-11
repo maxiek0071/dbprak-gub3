@@ -80,7 +80,7 @@ public class EmbeddingRepository {
 		String returnStatement = "";
 		String analogySelect = "cube(ARRAY[";
 
-		for (int i = 1; i < 301; i++) {
+		for (int i = 1; i < 101; i++) {
 			returnStatement += "w1.DIM" + i + "* w2.DIM" + i + "+";
 			analogySelect += "(cube_ll_coord(a2.vector, " + i + ")  - cube_ll_coord(a1.vector, " + i + ") + cube_ll_coord(b1.vector, " + i + ")),";
 		}
@@ -109,7 +109,7 @@ public class EmbeddingRepository {
 				"	END IF;\r\n" + 
 				"																			   \r\n" + 
 				"																			   \r\n" + 
-				"	RETURN QUERY  SELECT embeddings.word, (embeddings.vector <-> b2) as sim FROM embeddings where length != 0 order by sim desc limit 1;\r\n" + 
+				"	RETURN QUERY  SELECT embeddings.word, (embeddings.vector <-> b2) as sim FROM embeddings order by sim desc limit 1;\r\n" + 
 				"END;$$\r\n" + 
 				"LANGUAGE PLPGSQL;";
 
