@@ -53,11 +53,8 @@ public class EmbeddingRepository {
 
 			// Create Table for Data
 			stmt = serverCon.createStatement();
-			String createTable = ""
-					+ "CREATE EXTENSION IF NOT EXISTS cube; "
-					+ "CREATE TABLE EMBEDDINGS (WORD VARCHAR not NULL, vector cube, ";
-			
-			createTable = createTable.concat(" LENGTH double precision, ");
+			stmt.executeUpdate("CREATE EXTENSION IF NOT EXISTS cube");
+			String createTable = "CREATE TABLE EMBEDDINGS (WORD VARCHAR not NULL,vector cube, ";
 			createTable = createTable.concat(" PRIMARY KEY (WORD)); ");
 			stmt.executeUpdate(createTable);
 
@@ -155,7 +152,43 @@ public class EmbeddingRepository {
 		return base + result;
 	}
 	
+	public void indexingWordColumn() {
+		try(Statement statement = con.createStatement()){
+			statement.execute("CREATE INDEX word_indexing ON embeddings USING btree(word)");
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
 	
+	public QueryResult<String> createMaterializedSimView() {
+		// TODO replace returnStatement with a statement related to the new database
+		// structure
+		StringBuilder returnStatement = new StringBuilder();
+		for (int i = 1; i < 301; i++) {
+			returnStatement.append("w1.DIM" + i + "*w2.DIM" + i);
+			if (i < 300) {
+				returnStatement.append("+");
+			}
+		}
+		try (Statement statement = con.createStatement()) {
+			long startTime = System.currentTimeMillis();
+			statement.execute("CREATE MATERIALIZED VIEW sim_table (word_1, word_2, cos_sim) AS\r\n"
+					+ "(SELECT e1.word, e2.word, " + returnStatement.toString() + "\r\n"
+					+ "FROM embeddings e1, embeddings e2\r\n" + "WHERE e1.word <> e2.word)");
+			long endTime = System.currentTimeMillis();
+			// get size of view
+			ResultSet resultSet = statement.executeQuery("SELECT pg_size_pretty(pg_table_size(oid))\r\n"
+					+ "FROM   pg_class\r\n" + "WHERE  relname = 'sim_table'");
+			String result = "0";
+			if (resultSet.next()) {
+				result = resultSet.getString(1);
+			}
+			return new QueryResult<String>(result, endTime - startTime);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
 	
 	public QueryResult<Boolean> containsWord(String word) throws SQLException {
 		PreparedStatement stmt = con.prepareStatement("SELECT WORD FROM EMBEDDINGS WHERE word=?");
