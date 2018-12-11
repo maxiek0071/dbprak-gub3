@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.Reader;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,22 +35,11 @@ public class Gruppenuebung2_Gruppe1 {
 					List<BenchmarkResult> results = new ArrayList<BenchmarkResult>();
 					
 					
-					// Execute Similarity Benchmark (Exercise 4.1)
-					BenchmarkResult result = null;
-					result = runBenchmark("BENCHMARK 4.1: Simmilarity", new SimmilarityBenchmark(), "src/main/resources/MEN_dataset_natural_form_full", repo);
+					BenchmarkResult result = runBenchmark("BENCHMARK 4.2: Analogy (20 mins, 500 tests)", new AnalogyBenchmark(), "src/main/resources/questions-words.txt", repo);
 					if(result != null) {
 						results.add(result);
 					}
 					
-					result = runBenchmark("BENCHMARK 4.2: Analogy (20 mins, 500 tests)", new AnalogyBenchmark(), "src/main/resources/questions-words.txt", repo);
-					if(result != null) {
-						results.add(result);
-					}
-					
-					result = runBenchmark("BENCHMARK 4.3: Contains", new ContainsBenchmark(),  "src/main/resources/vocabs_shuffled.txt", repo);
-					if(result != null) {
-						results.add(result);
-					}
 					
 					BenchmarkResultPrinter.printPerformance(results);
 					System.out.println("SUCCESS: You can view the results");
