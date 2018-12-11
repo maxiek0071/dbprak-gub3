@@ -296,6 +296,12 @@ public class EmbeddingRepository {
 		return new QueryResult<Double>(new Double(simmilarity), runTime);
 	}
 	
+	public void createGistIndex() throws SQLException {
+		Statement statement = con.createStatement();
+		statement.execute("DROP INDEX  IF EXISTS vector_gist_index;\n" + 
+				"CREATE INDEX vector_gist_index ON  embeddings USING gist (vector);");
+	}
+	
 	
 	public void disconnect() {
 		if (con != null) {
