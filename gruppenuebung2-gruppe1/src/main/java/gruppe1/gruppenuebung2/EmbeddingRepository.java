@@ -1,9 +1,7 @@
  package gruppe1.gruppenuebung2;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.Reader;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -12,10 +10,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
-
-import org.postgresql.copy.CopyManager;
-import org.postgresql.core.BaseConnection;
 
 public class EmbeddingRepository {
 	private Connection con;
@@ -79,18 +73,31 @@ public class EmbeddingRepository {
 	private void createFunctionsForNearestNeighbors() {
 		String returnStatement = "";
 		String analogySelect = "cube(ARRAY[";
+		String lengthAttribute = "SQRT(";
 
 		for (int i = 1; i < 101; i++) {
-			returnStatement += "w1.DIM" + i + "* w2.DIM" + i + "+";
+			returnStatement += "(cube_ll_coord(w1.vector," + i + ") * cube_ll_coord(w2.vector," + i + "))+";
 			analogySelect += "(cube_ll_coord(a2.vector, " + i + ")  - cube_ll_coord(a1.vector, " + i + ") + cube_ll_coord(b1.vector, " + i + ")),";
+			lengthAttribute += "pow(cube_ll_coord(a," + i + "), 2.0) + ";
 		}
 		returnStatement = returnStatement.substring(0, returnStatement.length() - 1);
 		
 		analogySelect = analogySelect.substring(0, analogySelect.length() - 1);
 		analogySelect += "])";
 		
+		lengthAttribute = lengthAttribute.substring(0, lengthAttribute.length() - 2);
+		lengthAttribute += ")";
 		
-
+		String cubeLengthFunction = "CREATE OR REPLACE FUNCTION length(a cube) \r\n" + 
+				"RETURNS double precision AS\r\n" + 
+				"$$ DECLARE\r\n" + 
+				"	result double precision;\r\n" + 
+				"BEGIN\n" +
+				"SELECT " + lengthAttribute + " INTO result;\r\n" +
+				"RETURN  result;" + 
+				"END;$$\r\n" + 
+				"LANGUAGE PLPGSQL;";
+		
 		String function3 = "CREATE OR REPLACE FUNCTION getAnalogousWord(a1w varchar, a2w varchar, b1w varchar) \r\n" + 
 				"RETURNS TABLE(word character varying, sim double precision) AS\r\n" + 
 				"$$ DECLARE\r\n" + 
@@ -109,13 +116,14 @@ public class EmbeddingRepository {
 				"	END IF;\r\n" + 
 				"																			   \r\n" + 
 				"																			   \r\n" + 
-				"	RETURN QUERY  SELECT embeddings.word, (embeddings.vector <-> b2) as sim FROM embeddings order by sim desc limit 1;\r\n" + 
+				"	RETURN QUERY  SELECT embeddings.word, (embeddings.vector <-> b2) as sim FROM embeddings order by sim asc limit 1;\r\n" + 
 				"END;$$\r\n" + 
 				"LANGUAGE PLPGSQL;";
 
 		try (Statement statement = con.createStatement()){
 			statement.execute(function3);
-			simStatement = con.prepareStatement("SELECT w1.vector <-> w2.vector FROM embeddings w1, embeddings w2 WHERE w1.word=? AND w2.word=?");
+			statement.execute(cubeLengthFunction);
+			simStatement = con.prepareStatement("SELECT (" + returnStatement + ")/(length(w1.vector)*length(w2.vector)) FROM embeddings w1, embeddings w2 WHERE w1.word=? AND w2.word=?");
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
