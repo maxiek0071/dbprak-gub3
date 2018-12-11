@@ -32,6 +32,9 @@ public class Gruppenuebung2_Gruppe1 {
 				if(importSuccess) {
 					System.out.println("SUCCESS");
 					System.out.println();
+					System.out.println("CREATING GIST INDEX");
+					repo.createGistIndex();
+					
 					List<BenchmarkResult> results = new ArrayList<BenchmarkResult>();
 					
 					

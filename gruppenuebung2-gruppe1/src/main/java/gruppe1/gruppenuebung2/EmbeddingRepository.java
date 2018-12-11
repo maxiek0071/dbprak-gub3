@@ -1,9 +1,7 @@
  package gruppe1.gruppenuebung2;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.Reader;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -12,10 +10,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
-import org.postgresql.copy.CopyManager;
-import org.postgresql.core.BaseConnection;
 
 public class EmbeddingRepository {
 	private Connection con;
@@ -80,7 +75,7 @@ public class EmbeddingRepository {
 		String returnStatement = "";
 		String analogySelect = "cube(ARRAY[";
 
-		for (int i = 1; i < 301; i++) {
+		for (int i = 1; i < 101; i++) {
 			returnStatement += "w1.DIM" + i + "* w2.DIM" + i + "+";
 			analogySelect += "(cube_ll_coord(a2.vector, " + i + ")  - cube_ll_coord(a1.vector, " + i + ") + cube_ll_coord(b1.vector, " + i + ")),";
 		}
@@ -109,7 +104,7 @@ public class EmbeddingRepository {
 				"	END IF;\r\n" + 
 				"																			   \r\n" + 
 				"																			   \r\n" + 
-				"	RETURN QUERY  SELECT embeddings.word, (embeddings.vector <-> b2) as sim FROM embeddings where length != 0 order by sim desc limit 1;\r\n" + 
+				"	RETURN QUERY  SELECT embeddings.word, (embeddings.vector <-> b2) as sim FROM embeddings order by sim desc limit 1;\r\n" + 
 				"END;$$\r\n" + 
 				"LANGUAGE PLPGSQL;";
 
@@ -286,6 +281,12 @@ public class EmbeddingRepository {
 		rs.close();
 		
 		return new QueryResult<Double>(new Double(simmilarity), runTime);
+	}
+	
+	public void createGistIndex() throws SQLException {
+		Statement statement = con.createStatement();
+		statement.execute("DROP INDEX  IF EXISTS vector_gist_index;\n" + 
+				"CREATE INDEX vector_gist_index ON  embeddings USING gist (vector);");
 	}
 	
 	
