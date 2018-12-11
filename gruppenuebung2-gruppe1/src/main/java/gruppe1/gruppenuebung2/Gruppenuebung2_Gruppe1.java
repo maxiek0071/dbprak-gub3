@@ -39,11 +39,30 @@ public class Gruppenuebung2_Gruppe1 {
 					if(result != null) {
 						results.add(result);
 					}
-					
-					
 					BenchmarkResultPrinter.printPerformance(results);
-					System.out.println("SUCCESS: You can view the results");
 
+					QueryResult<String> queryResult = repo.createMaterializedSimView();
+					System.out.println("Time to create view: " + queryResult.getRunTime() + " ms");
+					System.out.println("Size of view: " + queryResult.getResult());
+
+					// TODO overwrite getCosSim function: replace the embedding table with the
+					// materialized view (not symmetric; change in createMaterializedSimView
+					// function if needed)
+					result = runBenchmark("BENCHMARK 4.5: Similarity", new SimmilarityBenchmark(),
+							"src/main/resources/MEN_dataset_natural_form_full", repo);
+					if (result != null) {
+						results.add(result);
+					}
+					BenchmarkResultPrinter.printPerformance(results);
+
+					result = runBenchmark("BENCHMARK 5.3: Contains", new ContainsBenchmark(),
+							"src/main/resources/vocabs_shuffled.txt", repo);
+					if (result != null) {
+						results.add(result);
+					}
+					BenchmarkResultPrinter.printPerformance(results);
+
+					System.out.println("SUCCESS: You can view the results");
 				} else {
 					System.out.println("FAIL");
 					System.out.println("An error oucurred reading the data. Place the CSV files in the src/main/resources folder");

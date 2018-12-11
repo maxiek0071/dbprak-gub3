@@ -183,7 +183,7 @@ public class EmbeddingRepository {
 		// structure
 		StringBuilder returnStatement = new StringBuilder();
 		for (int i = 1; i < 301; i++) {
-			returnStatement.append("cube_ll_coord(w2.vector, " + i + ") * cube_ll_coord(w2.vector, " + i + ")");
+			returnStatement.append("cube_ll_coord(e1.vector, " + i + ") * cube_ll_coord(e2.vector, " + i + ")");
 			if (i < 300) {
 				returnStatement.append("+");
 			}
@@ -192,7 +192,9 @@ public class EmbeddingRepository {
 			long startTime = System.currentTimeMillis();
 			statement.execute("CREATE MATERIALIZED VIEW sim_table (word_1, word_2, cos_sim) AS\r\n"
 					+ "(SELECT e1.word, e2.word, " + returnStatement.toString() + "\r\n"
-					+ "FROM embeddings e1, embeddings e2\r\n" + "WHERE e1.word <> e2.word)");
+					+ "FROM embeddings e1, embeddings e2\r\n" + "WHERE e1.word <> e2.word\r\n" //
+					+ "AND e1.word < e2.word" // (avoids duplicates; remove this for a symmetric view)
+					+ ")");
 			long endTime = System.currentTimeMillis();
 			// get size of view
 			ResultSet resultSet = statement.executeQuery("SELECT pg_size_pretty(pg_table_size(oid))\r\n"
