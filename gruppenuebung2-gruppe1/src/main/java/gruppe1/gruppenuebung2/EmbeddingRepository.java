@@ -153,34 +153,43 @@ public class EmbeddingRepository {
 
 	}
 
-	public boolean importData(BufferedReader in) throws SQLException {
-		String tableName = "EMBEDDINGS";
+	public boolean importData(BufferedReader in) throws SQLException, IOException {
 		boolean success = false;
-		String insertStmt = "INSERT ...";
+		String insertStmt = "INSERT INTO embeddings (word,vector) VALUES (?,?::cube); ";
 		
-		in.lines().skip(1).map(line -> dimsToCube(insertStmt, line));
-
-		if (con != null) {
-			try {
-				CopyManager copyManager = new CopyManager((BaseConnection) con);
-				copyManager.copyIn("COPY " + tableName + " FROM STDIN CSV HEADER DELIMITER ';'", in);
-				success = true;
-			} catch (SQLException e) {
-				e.printStackTrace();
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
+	try	(PreparedStatement st = con.prepareStatement(insertStmt)){
+			
+		
+		String line;
+		boolean skipFirst = true;
+		while ((line = in.readLine() ) != null) {
+			
+			if (skipFirst) {
+				skipFirst = false;
+				continue;
 			}
+			String word = line.substring(0, line.indexOf(";"));
+			st.setString(1, word);
+			st.setObject(2,dimsToCube(line));
+			st.addBatch();
+			
+			 ;
 		}
+		st.executeBatch();
+		success = true;
+	}
 		return success;
 	}
 
-	private String dimsToCube(String base, String line) {
-		String word = line.substring(0, line.indexOf(";"));
-		String dims = line.substring(line.indexOf(";") + 1, line.lastIndexOf(';')).replace(";", ",");
-		String result = word + ";" + "cube('{" + dims + "}')";
-		return base + result;
+	private String dimsToCube( String line) {
+		String allDims = line.substring(line.indexOf(";") + 1, line.lastIndexOf(';')).replace(";", ",");
+		String[] dimsSplitted = allDims.split(",");
+		String limitedDims = "";
+		for (int i =0; i< 100;i++) {
+			limitedDims += dimsSplitted[i] + ",";
+		}
+		limitedDims = "(" + limitedDims.substring(0,limitedDims.length()-1) + ")";
+		return limitedDims;
 	}
 	
 	
