@@ -169,7 +169,7 @@ public class EmbeddingRepository {
 		// structure
 		StringBuilder returnStatement = new StringBuilder();
 		for (int i = 1; i < 301; i++) {
-			returnStatement.append("w1.DIM" + i + "*w2.DIM" + i);
+			returnStatement.append("cube_ll_coord(w2.vector, " + i + ") * cube_ll_coord(w2.vector, " + i + ")");
 			if (i < 300) {
 				returnStatement.append("+");
 			}
