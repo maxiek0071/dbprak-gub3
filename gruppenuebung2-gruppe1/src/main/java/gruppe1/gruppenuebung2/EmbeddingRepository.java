@@ -170,8 +170,9 @@ public class EmbeddingRepository {
 	}
 	
 	public void indexingWordColumn() {
-		try(Statement statement = con.createStatement()){
-			statement.execute("CREATE INDEX word_indexing ON embeddings USING btree(word)");
+		try (Statement statement = con.createStatement()) {
+			statement.execute("DROP INDEX IF EXISTS word_indexing;\r\n"
+					+ "CREATE INDEX word_indexing ON embeddings USING btree(word);");
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
