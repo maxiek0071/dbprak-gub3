@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class EmbeddingRepository {
+	private static int DIMENSION = 5;
 	private Connection con;
 	private PreparedStatement simStatement;
 
@@ -48,7 +49,11 @@ public class EmbeddingRepository {
 			// Create Table for Data
 			stmt = serverCon.createStatement();
 			stmt.executeUpdate("CREATE EXTENSION IF NOT EXISTS cube");
-			String createTable = "CREATE TABLE EMBEDDINGS (WORD VARCHAR not NULL,vector cube, ";
+			String createTable = "CREATE TABLE EMBEDDINGS (WORD VARCHAR not NULL, ";
+			for (int i = 1; i <= DIMENSION; i++) {
+				createTable = createTable.concat(" DIM" + i + " double precision,");
+			}
+			createTable = createTable.concat(" LENGTH double precision, ");
 			createTable = createTable.concat(" PRIMARY KEY (WORD)); ");
 			stmt.executeUpdate(createTable);
 
