@@ -124,10 +124,25 @@ public class EmbeddingRepository {
 				"	RETURN QUERY  SELECT embeddings.word, (embeddings.vector <-> b2) as sim FROM embeddings order by sim asc limit 1;\r\n" + 
 				"END;$$\r\n" + 
 				"LANGUAGE PLPGSQL;";
+		
+		String deleteIndexes = "CREATE OR REPLACE FUNCTION drop_all_indexes() RETURNS INTEGER AS $$\r\n" + 
+				"BEGIN\r\n" + 
+				"   EXECUTE (\r\n" + 
+				"   SELECT 'DROP INDEX ' || string_agg(indexrelid::regclass::text, ', ')\r\n" + 
+				"   FROM   pg_index  i\r\n" + 
+				"   LEFT   JOIN pg_depend d ON d.objid = i.indexrelid\r\n" + 
+				"                          AND d.deptype = 'i'\r\n" + 
+				"   WHERE  i.indrelid = 'embeddings'::regclass\r\n" + 
+				"   AND    d.objid IS NULL\r\n" + 
+				"   );\r\n" + 
+				"RETURN 1;\r\n" + 
+				"END\r\n" + 
+				"$$ LANGUAGE plpgsql;";
 
 		try (Statement statement = con.createStatement()){
 			statement.execute(function3);
 			statement.execute(cubeLengthFunction);
+			statement.execute(deleteIndexes);
 			simStatement = con.prepareStatement("SELECT (" + returnStatement + ")/(length(w1.vector)*length(w2.vector)) FROM embeddings w1, embeddings w2 WHERE w1.word=? AND w2.word=?");
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -178,6 +193,14 @@ public class EmbeddingRepository {
 		try (Statement statement = con.createStatement()) {
 			statement.execute("DROP INDEX IF EXISTS word_indexing;\r\n"
 					+ "CREATE INDEX word_indexing ON embeddings USING btree(word);");
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void deleteAllIndexes() {
+		try (Statement statement = con.createStatement()) {
+			statement.execute("SELECT drop_all_indexes()");
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
