@@ -4,6 +4,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 
 /**
@@ -40,7 +41,7 @@ public abstract class Benchmark {
 	 */
 	public BenchmarkResult run(EmbeddingRepository repo) {
 		BenchmarkResult result = new BenchmarkResult(name);
-		Collections.shuffle(tasks);
+		Collections.shuffle(tasks, new Random(0));
 		for(BenchmarkTask randomTask: tasks) {
 			try {
 				TaskResult tr = randomTask.run(repo);
