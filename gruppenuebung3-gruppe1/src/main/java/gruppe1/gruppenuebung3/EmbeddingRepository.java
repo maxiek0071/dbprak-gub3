@@ -1,4 +1,4 @@
- package gruppe1.gruppenuebung2;
+ package gruppe1.gruppenuebung3;
 
 import java.io.BufferedReader;
 import java.io.IOException;
