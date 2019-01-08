@@ -15,6 +15,7 @@ public class AnalogyTask implements BenchmarkTask {
 		this.expectedB2 = expectedB2;
 	}
 
+
 	@Override
 	public TaskResult run(EmbeddingRepository repo) throws SQLException {
 		QueryResult<String> result = repo.getAnalogousWord(a1, a2, b1);
