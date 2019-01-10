@@ -51,7 +51,6 @@ public class EmbeddingRepository {
 			stmt.executeUpdate("CREATE EXTENSION IF NOT EXISTS cube");
 			String createTable = "CREATE TABLE EMBEDDINGS (WORD VARCHAR not NULL,vector cube, ";
 			
-			createTable = createTable.concat(" LENGTH double precision, ");
 			createTable = createTable.concat(" PRIMARY KEY (WORD)); ");
 			stmt.executeUpdate(createTable);
 
@@ -180,7 +179,7 @@ public class EmbeddingRepository {
 		String allDims = line.substring(line.indexOf(";") + 1, line.lastIndexOf(';')).replace(";", ",");
 		String[] dimsSplitted = allDims.split(",");
 		String limitedDims = "";
-		for (int i =0; i< 100;i++) {
+		for (int i =0; i< 5;i++) {
 			limitedDims += dimsSplitted[i] + ",";
 		}
 		limitedDims = "(" + limitedDims.substring(0,limitedDims.length()-1) + ")";
