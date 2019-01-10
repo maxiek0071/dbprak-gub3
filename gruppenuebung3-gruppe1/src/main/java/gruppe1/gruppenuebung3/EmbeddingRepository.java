@@ -73,32 +73,13 @@ public class EmbeddingRepository {
 	}
 
 	private void createFunctionsForNearestNeighbors() {
-		String returnStatement = "";
 		String analogySelect = "cube(ARRAY[";
-		String lengthAttribute = "SQRT(";
 
-		for (int i = 1; i < 101; i++) {
-			returnStatement += "(cube_ll_coord(w1.vector," + i + ") * cube_ll_coord(w2.vector," + i + "))+";
+		for (int i = 1; i < 6; i++) {
 			analogySelect += "(cube_ll_coord(a2.vector, " + i + ")  - cube_ll_coord(a1.vector, " + i + ") + cube_ll_coord(b1.vector, " + i + ")),";
-			lengthAttribute += "pow(cube_ll_coord(a," + i + "), 2.0) + ";
 		}
-		returnStatement = returnStatement.substring(0, returnStatement.length() - 1);
-		
 		analogySelect = analogySelect.substring(0, analogySelect.length() - 1);
 		analogySelect += "])";
-		
-		lengthAttribute = lengthAttribute.substring(0, lengthAttribute.length() - 2);
-		lengthAttribute += ")";
-		
-		String cubeLengthFunction = "CREATE OR REPLACE FUNCTION length(a cube) \r\n" + 
-				"RETURNS double precision AS\r\n" + 
-				"$$ DECLARE\r\n" + 
-				"	result double precision;\r\n" + 
-				"BEGIN\n" +
-				"SELECT " + lengthAttribute + " INTO result;\r\n" +
-				"RETURN  result;" + 
-				"END;$$\r\n" + 
-				"LANGUAGE PLPGSQL;";
 		
 		String function3 = "CREATE OR REPLACE FUNCTION getAnalogousWord(a1w varchar, a2w varchar, b1w varchar) \r\n" + 
 				"RETURNS TABLE(word character varying, sim double precision) AS\r\n" + 
@@ -138,9 +119,7 @@ public class EmbeddingRepository {
 
 		try (Statement statement = con.createStatement()){
 			statement.execute(function3);
-			statement.execute(cubeLengthFunction);
 			statement.execute(deleteIndexes);
-			simStatement = con.prepareStatement("SELECT (" + returnStatement + ")/(length(w1.vector)*length(w2.vector)) FROM embeddings w1, embeddings w2 WHERE w1.word=? AND w2.word=?");
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -152,8 +131,6 @@ public class EmbeddingRepository {
 		String insertStmt = "INSERT INTO embeddings (word,vector) VALUES (?,?::cube); ";
 		
 	try	(PreparedStatement st = con.prepareStatement(insertStmt)){
-			
-		
 		String line;
 		boolean skipFirst = true;
 		while ((line = in.readLine() ) != null) {
@@ -186,54 +163,8 @@ public class EmbeddingRepository {
 		return limitedDims;
 	}
 	
-	public void indexingWordColumn() {
-		try (Statement statement = con.createStatement()) {
-			statement.execute("DROP INDEX IF EXISTS word_indexing;\r\n"
-					+ "CREATE INDEX word_indexing ON embeddings USING btree(word);");
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-	}
 	
-	public void deleteAllIndexes() {
-		try (Statement statement = con.createStatement()) {
-			statement.execute("SELECT drop_all_indexes()");
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-	}
 	
-	public QueryResult<String> createMaterializedSimView() {
-		// TODO replace returnStatement with a statement related to the new database
-		// structure
-		StringBuilder returnStatement = new StringBuilder();
-		for (int i = 1; i < 301; i++) {
-			returnStatement.append("cube_ll_coord(e1.vector, " + i + ") * cube_ll_coord(e2.vector, " + i + ")");
-			if (i < 300) {
-				returnStatement.append("+");
-			}
-		}
-		try (Statement statement = con.createStatement()) {
-			long startTime = System.currentTimeMillis();
-			statement.execute("CREATE MATERIALIZED VIEW sim_table (word_1, word_2, cos_sim) AS\r\n"
-					+ "(SELECT e1.word, e2.word, " + returnStatement.toString() + "\r\n"
-					+ "FROM embeddings e1, embeddings e2\r\n" + "WHERE e1.word <> e2.word\r\n" //
-					+ "AND e1.word < e2.word" // (avoids duplicates; remove this for a symmetric view)
-					+ ")");
-			long endTime = System.currentTimeMillis();
-			// get size of view
-			ResultSet resultSet = statement.executeQuery("SELECT pg_size_pretty(pg_table_size(oid))\r\n"
-					+ "FROM   pg_class\r\n" + "WHERE  relname = 'sim_table'");
-			String result = "0";
-			if (resultSet.next()) {
-				result = resultSet.getString(1);
-			}
-			return new QueryResult<String>(result, endTime - startTime);
-		} catch (SQLException e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
 	
 	public QueryResult<Boolean> containsWord(String word) throws SQLException {
 		PreparedStatement stmt = con.prepareStatement("SELECT WORD FROM EMBEDDINGS WHERE word=?");
@@ -305,29 +236,31 @@ public class EmbeddingRepository {
 		return new QueryResult<List<WordResult>>(results, runTime);
 	}
 
-	public QueryResult<Double> getCosSimilarity(String w1, String w2) throws SQLException {
-		double simmilarity = -1;
-
-		
-		simStatement.setString(1, w1);
-		simStatement.setString(2, w2);
-
-		long startTime = System.currentTimeMillis();
-		ResultSet rs = simStatement.executeQuery();
-		long runTime = System.currentTimeMillis() - startTime;
-
-		if (rs.next()) {
-			simmilarity = rs.getDouble(1);
-		}
-		rs.close();
-		
-		return new QueryResult<Double>(new Double(simmilarity), runTime);
-	}
 	
 	public void createGistIndex() throws SQLException {
+		deleteAllIndexes();
 		Statement statement = con.createStatement();
 		statement.execute("DROP INDEX  IF EXISTS vector_gist_index;\n" + 
 				"CREATE INDEX vector_gist_index ON  embeddings USING gist (vector);");
+		statement.close();
+	}
+	
+	public void createBTreeIndex() throws SQLException{
+		deleteAllIndexes();
+		Statement statement = con.createStatement();
+		statement.execute("DROP INDEX IF EXISTS word_indexing;\r\n"
+						+ "CREATE INDEX word_indexing ON embeddings USING btree(vector);");
+		statement.close();
+		
+	}
+	
+	private void deleteAllIndexes() {
+		try (Statement statement = con.createStatement()) {
+			statement.execute("SELECT drop_all_indexes()");
+			statement.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} 
 	}
 	
 	
