@@ -11,10 +11,11 @@ public class AnalogyBenchmark extends Benchmark {
 	private int upperLimit;
 	private int lowerLimit;//Limits the amount of tasks due to performance issues
 
-	public AnalogyBenchmark() {
-		super("AnalogyBenchmark");
-		upperLimit = 19500;
-		lowerLimit = 19000;
+	public AnalogyBenchmark(String name) {
+		super(name);
+		lowerLimit = 0;
+		upperLimit = 100000;
+		
 	}
 
 	@Override
@@ -38,5 +39,15 @@ public class AnalogyBenchmark extends Benchmark {
 			System.out.println(e);
 		}
 		return success;
+	}
+
+	@Override
+	public void setup(EmbeddingRepository repo) {
+		
+	}
+
+	@Override
+	public void cleanup(EmbeddingRepository repo) {
+		
 	}
 }

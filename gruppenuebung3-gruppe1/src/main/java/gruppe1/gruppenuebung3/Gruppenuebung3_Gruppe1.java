@@ -34,11 +34,23 @@ public class Gruppenuebung3_Gruppe1 {
 					System.out.println();
 					List<BenchmarkResult> results = new ArrayList<BenchmarkResult>();
 					
-					BenchmarkResult result = runBenchmark("BENCHMARk: Analogy ", new AnalogyBenchmark(), "src/main/resources/questions-words.txt", repo);
+					BenchmarkResult result = runBenchmark("BENCHMARk: Analogy ", new AnalogyBenchmark("Analogy"), "src/main/resources/questions-words.txt", repo);
+					if(result != null) {
+						results.add(result);
+					}
+					
+					result = runBenchmark("BENCHMARK: Analogy with Gist ", new AnalogyGistBenchmark(), "src/main/resources/questions-words.txt", repo);
+					if(result != null) {
+						results.add(result);
+					}
+					
+					result = runBenchmark("BENCHMARK: Analogy with BTree ", new AnalogyBTreeBenchmark(), "src/main/resources/questions-words.txt", repo);
 					if(result != null) {
 						results.add(result);
 					}
 					BenchmarkResultPrinter.printPerformance(results);
+					
+					
 
 					System.out.println("SUCCESS: You can view the results");
 				} else {

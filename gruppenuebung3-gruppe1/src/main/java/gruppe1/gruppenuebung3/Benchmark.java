@@ -42,6 +42,9 @@ public abstract class Benchmark {
 	public BenchmarkResult run(EmbeddingRepository repo) {
 		BenchmarkResult result = new BenchmarkResult(name);
 		Collections.shuffle(tasks, new Random(0));
+		
+		setup(repo);
+		
 		for(BenchmarkTask randomTask: tasks) {
 			try {
 				TaskResult tr = randomTask.run(repo);
@@ -52,6 +55,9 @@ public abstract class Benchmark {
 			} catch (SQLException e) {
 			}
 		}
+		
+		cleanup(repo);
+		
 		return result;
 	}
 	
@@ -66,4 +72,7 @@ public abstract class Benchmark {
 	 */
 	public abstract boolean importData(String filePath);
 
+	public abstract void setup(EmbeddingRepository repo);
+	
+	public abstract void cleanup(EmbeddingRepository repo);
 }

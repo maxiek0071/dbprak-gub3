@@ -12,9 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class EmbeddingRepository {
-	private static int DIMENSION = 5;
 	private Connection con;
-	private PreparedStatement simStatement;
 
 	private EmbeddingRepository(Connection con) {
 		this.con = con;
@@ -240,23 +238,21 @@ public class EmbeddingRepository {
 	public void createGistIndex() throws SQLException {
 		deleteAllIndexes();
 		Statement statement = con.createStatement();
-		statement.execute("DROP INDEX  IF EXISTS vector_gist_index;\n" + 
-				"CREATE INDEX vector_gist_index ON  embeddings USING gist (vector);");
+		statement.execute("CREATE INDEX vector_gist_index ON  embeddings USING gist (vector);");
 		statement.close();
 	}
 	
 	public void createBTreeIndex() throws SQLException{
 		deleteAllIndexes();
 		Statement statement = con.createStatement();
-		statement.execute("DROP INDEX IF EXISTS word_indexing;\r\n"
-						+ "CREATE INDEX word_indexing ON embeddings USING btree(vector);");
+		statement.execute("CREATE INDEX vector_btree_index ON embeddings USING btree(vector);");
 		statement.close();
 		
 	}
 	
-	private void deleteAllIndexes() {
+	public void deleteAllIndexes() {
 		try (Statement statement = con.createStatement()) {
-			statement.execute("SELECT drop_all_indexes()");
+			statement.execute("DROP INDEX IF EXISTS vector_btree_index; DROP INDEX IF EXISTS vector_gist_index;");
 			statement.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -267,7 +263,6 @@ public class EmbeddingRepository {
 	public void disconnect() {
 		if (con != null) {
 			try {
-				simStatement.close();
 				con.close();
 			} catch (SQLException e) {
 
