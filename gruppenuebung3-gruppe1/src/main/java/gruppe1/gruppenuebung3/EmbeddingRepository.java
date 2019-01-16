@@ -1,6 +1,9 @@
  package gruppe1.gruppenuebung3;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -47,9 +50,16 @@ public class EmbeddingRepository {
 			// Create Table for Data
 			stmt = serverCon.createStatement();
 			stmt.executeUpdate("CREATE EXTENSION IF NOT EXISTS cube");
-			String createTable = "CREATE TABLE EMBEDDINGS (WORD VARCHAR not NULL,vector cube, ";
-			
-			createTable = createTable.concat(" PRIMARY KEY (WORD)); ");
+			stmt.executeUpdate("			CREATE TABLE dict(\r\n" + 
+					"					id integer primary key ,\r\n" + 
+					"					word character varying NOT NULL);");
+			String createTable = "CREATE TABLE public.embeddings\r\n" + 
+					"(\r\n" + 
+					"  word_id int,\r\n" + 
+					"  vector cube NOT NULL,\r\n" +
+					"  year int NOT NULL,\r\n" +					
+					"  FOREIGN KEY (word_id) REFERENCES dict (id)\r\n" + 
+					")";
 			stmt.executeUpdate(createTable);
 
 			stmt.close();
@@ -124,34 +134,64 @@ public class EmbeddingRepository {
 
 	}
 
-	public boolean importData(BufferedReader in) throws SQLException, IOException {
-		boolean success = false;
-		String insertStmt = "INSERT INTO embeddings (word,vector) VALUES (?,?::cube); ";
+public boolean importData(String path) throws SQLException, IOException {
+	return importDictionary(path) && importEmbedding(path);
+	}
+
+
+private boolean importEmbedding(String path) throws SQLException, IOException {
+	boolean success = false;
+	try(BufferedReader in = new BufferedReader(new FileReader(new File(path+ "out-normalized.csv")));) {
+		String insertStmt = "INSERT INTO embeddings (word_id,vector,year) VALUES (?,?::cube,?); ";
+	
+		try	(PreparedStatement st = con.prepareStatement(insertStmt)){
+			String line;
+			boolean skipFirst = true;
+			while ((line = in.readLine() ) != null) {
+				
+				if (skipFirst) {
+					skipFirst = false;
+					continue;
+				}
+				String wordIndex = line.substring(0, line.indexOf(";"));
+				st.setInt(1, new Integer(wordIndex));
+				st.setObject(2,dimsToCube(line));
+				st.setInt(3, new Integer(line.split(";")[6]));
+				st.addBatch();
+				
+			}
+			st.executeBatch();
+			success = true;
+		}}
+			return success;
+	}
+
+
+
+
+private boolean importDictionary(String path) throws IOException, SQLException, FileNotFoundException {
+	boolean success = false;
+		try(BufferedReader in = new BufferedReader(new FileReader(new File(path+ "dict.csv")));) {
+		
+		String insertStmt = "INSERT INTO dict (id,word) VALUES (?,?); ";
 		
 	try	(PreparedStatement st = con.prepareStatement(insertStmt)){
+			
 		String line;
-		boolean skipFirst = true;
 		while ((line = in.readLine() ) != null) {
-			
-			if (skipFirst) {
-				skipFirst = false;
-				continue;
-			}
-			String word = line.substring(0, line.indexOf(";"));
-			st.setString(1, word);
-			st.setObject(2,dimsToCube(line));
+			st.setInt(1, new Integer(line.split(";")[0]));
+			st.setObject(2,line.split(";")[1]);
 			st.addBatch();
-			
-			 ;
 		}
 		st.executeBatch();
 		success = true;
 	}
+		}
 		return success;
-	}
+}
 
 	private String dimsToCube( String line) {
-		String allDims = line.substring(line.indexOf(";") + 1, line.lastIndexOf(';')).replace(";", ",");
+		String allDims = line.substring(line.indexOf(";") + 1, line.lastIndexOf(";")).replace(";", ",");
 		String[] dimsSplitted = allDims.split(",");
 		String limitedDims = "";
 		for (int i =0; i< 5;i++) {

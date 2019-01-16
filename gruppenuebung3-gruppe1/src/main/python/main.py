@@ -3,10 +3,13 @@ import numpy as np
 import csv
 import math
 import pickle
+import os
 from sklearn import manifold
 from sklearn.decomposition import PCA
 
-
+first = True
+dict = dict()
+counter = 0
 class Embedding:
 
     def __init__(self, vecs, vocab):
@@ -18,40 +21,50 @@ class Embedding:
         iw = pickle.load(open(path + "-vocab.pkl", "rb"),encoding='latin1')
         return cls(mat, iw) 
 
-    def writeCSV(self,normalize = False, mds = False):
-        if mds:
-            self.m=np.resize(self.m,(20000,300))
-            mds = manifold.MDS(n_components=5,n_jobs=1,n_init=1)
-            self.m = mds.fit(self.m).embedding_
+    def writeDict():
+        global dict
+        with open('dict.csv', 'w',encoding='utf-8',newline='') as csv_file:
+            writer = csv.writer(csv_file, delimiter=';')
+            for key, value in dict.items():
+                writer.writerow([value, key])
+		
+		
+    def writeCSV(self,year):
+        global counter
+        global dict
+        global first
         filename='out'
-        if normalize:
-            filename = filename + '-normalized'
-        else:
-            filename = filename + '-unnormalized'	
-        filename = filename + '.csv'			
-        with open(filename, "w",encoding='utf-8',newline='') as csv_file:
+        filename = filename + '-normalized'	
+        filename = filename + '.csv'		
+        if os.path.exists(filename) and first:
+            os.remove(filename)		
+        with open(filename, "a+",encoding='utf-8',newline='') as csv_file:
             writer = csv.writer(csv_file, delimiter=';')
             dims = ['word']
             #creating the headers
             for x in range(0, 5):
                 dims.append("dim" +str(x+1))
-            dims.append("vector_length")
-            writer.writerow((dims))
+            if  first:
+                writer.writerow((dims))
+            first=False
             #creating the lines with content
             #for i in range(0, len(self.m)):			
             for i in range(0, len(self.m)):
                 line = []
                 content = self.iw[i]
+                if dict.get(content) is not None:
+                    content = dict[content]
+                else:
+                    counter = counter+1
+                    dict[content] = counter
+                    content = counter
                 line.append(content)
-                flatten  = self.m[i].flatten()
-                sqrLength = 0
-                for j in range(0,len(flatten)):
-                    sqrLength = sqrLength + flatten[j] ** 2
-                sqrLength=math.sqrt(sqrLength)				
+                flatten  = self.m[i].flatten()			
                 line.extend(flatten)
-                line.append(sqrLength)
+                line.append(year)
                 writer.writerow((line))
 
 if __name__ == '__main__':
-    embedding = Embedding.load("source/" + str(1990))
-    embedding.writeCSV(mds=False)
+    for i in range(1900,1990+1,10):
+        Embedding.load("source/" + str(i)).writeCSV(i)
+    Embedding.writeDict()

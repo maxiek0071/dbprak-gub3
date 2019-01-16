@@ -20,45 +20,47 @@ public class Gruppenuebung3_Gruppe1 {
 			System.out.println("SUCCESS");
 			System.out.println();
 			
-			String srcFile = "src/main/resources/out-normalized.csv";
+			String srcFile = "src/main/resources/";
 			
 			
-			try(BufferedReader in = new BufferedReader(new FileReader(new File(srcFile)));) {
+			
 				// Import data to local database
 				System.out.println();
 				System.out.print("Importing embeddings into database... ");
-				boolean importSuccess =  repo.importData(in);
+				try {
+					boolean importSuccess =  repo.importData(srcFile);
+				} 
 				
-				if(importSuccess) {
-					System.out.println("SUCCESS");
-					System.out.println();
-					List<BenchmarkResult> results = new ArrayList<BenchmarkResult>();
-					
-					BenchmarkResult result = runBenchmark("BENCHMARk: Analogy ", new AnalogyBenchmark("Analogy"), "src/main/resources/questions-words.txt", repo);
-					if(result != null) {
-						results.add(result);
-					}
-					
-					result = runBenchmark("BENCHMARK: Analogy with Gist ", new AnalogyGistBenchmark(), "src/main/resources/questions-words.txt", repo);
-					if(result != null) {
-						results.add(result);
-					}
-					
-					result = runBenchmark("BENCHMARK: Analogy with BTree ", new AnalogyBTreeBenchmark(), "src/main/resources/questions-words.txt", repo);
-					if(result != null) {
-						results.add(result);
-					}
-					BenchmarkResultPrinter.printPerformance(results);
-					
-					
-
-					System.out.println("SUCCESS: You can view the results");
-				} else {
-					System.out.println("FAIL");
-					System.out.println("An error oucurred reading the data. Place the CSV files in the src/main/resources folder");
-				}
+//				if(importSuccess) {
+//					System.out.println("SUCCESS");
+//					System.out.println();
+//					List<BenchmarkResult> results = new ArrayList<BenchmarkResult>();
+//					
+//					BenchmarkResult result = runBenchmark("BENCHMARk: Analogy ", new AnalogyBenchmark("Analogy"), "src/main/resources/questions-words.txt", repo);
+//					if(result != null) {
+//						results.add(result);
+//					}
+//					
+//					result = runBenchmark("BENCHMARK: Analogy with Gist ", new AnalogyGistBenchmark(), "src/main/resources/questions-words.txt", repo);
+//					if(result != null) {
+//						results.add(result);
+//					}
+//					
+//					result = runBenchmark("BENCHMARK: Analogy with BTree ", new AnalogyBTreeBenchmark(), "src/main/resources/questions-words.txt", repo);
+//					if(result != null) {
+//						results.add(result);
+//					}
+//					BenchmarkResultPrinter.printPerformance(results);
+//					
+//					
+//
+//					System.out.println("SUCCESS: You can view the results");
+//				} else {
+//					System.out.println("FAIL");
+//					System.out.println("An error oucurred reading the data. Place the CSV files in the src/main/resources folder");
+//				}
 				
-			} catch (IOException | SQLException e) {
+			catch (IOException | SQLException e) {
 				// TODO Auto-generated catch block
 				System.out.println("Error: " + e.getMessage());
 			} finally {
