@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class EmbeddingRepository {
-	private Connection con;
+		private Connection con;
 
 	private EmbeddingRepository(Connection con) {
 		this.con = con;
@@ -49,18 +49,10 @@ public class EmbeddingRepository {
 
 			// Create Table for Data
 			stmt = serverCon.createStatement();
-			stmt.executeUpdate("CREATE EXTENSION IF NOT EXISTS cube");
-			stmt.executeUpdate("			CREATE TABLE dict(\r\n" + 
-					"					id integer primary key ,\r\n" + 
-					"					word character varying NOT NULL);");
-			String createTable = "CREATE TABLE public.embeddings\r\n" + 
-					"(\r\n" + 
-					"  word_id int,\r\n" + 
-					"  vector cube NOT NULL,\r\n" +
-					"  year int NOT NULL,\r\n" +					
-					"  FOREIGN KEY (word_id) REFERENCES dict (id)\r\n" + 
-					")";
-			stmt.executeUpdate(createTable);
+			stmt.executeUpdate(SqlQueries.CUBE_EXTENSTION);
+			stmt.executeUpdate(SqlQueries.DICT_TABLE);
+			stmt.executeUpdate(SqlQueries.DICT_HASH_INDEX);
+			stmt.executeUpdate(SqlQueries.EMBEDDINGS_TABLE);
 
 			stmt.close();
 			repo = new EmbeddingRepository(serverCon);
@@ -111,23 +103,10 @@ public class EmbeddingRepository {
 				"END;$$\r\n" + 
 				"LANGUAGE PLPGSQL;";
 		
-		String deleteIndexes = "CREATE OR REPLACE FUNCTION drop_all_indexes() RETURNS INTEGER AS $$\r\n" + 
-				"BEGIN\r\n" + 
-				"   EXECUTE (\r\n" + 
-				"   SELECT 'DROP INDEX ' || string_agg(indexrelid::regclass::text, ', ')\r\n" + 
-				"   FROM   pg_index  i\r\n" + 
-				"   LEFT   JOIN pg_depend d ON d.objid = i.indexrelid\r\n" + 
-				"                          AND d.deptype = 'i'\r\n" + 
-				"   WHERE  i.indrelid = 'embeddings'::regclass\r\n" + 
-				"   AND    d.objid IS NULL\r\n" + 
-				"   );\r\n" + 
-				"RETURN 1;\r\n" + 
-				"END\r\n" + 
-				"$$ LANGUAGE plpgsql;";
 
 		try (Statement statement = con.createStatement()){
 			statement.execute(function3);
-			statement.execute(deleteIndexes);
+			statement.execute(SqlQueries.DELETE_ALL_INDEXES);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
