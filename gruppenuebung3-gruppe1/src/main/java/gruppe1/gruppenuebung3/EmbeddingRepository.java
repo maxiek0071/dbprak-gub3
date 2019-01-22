@@ -47,7 +47,7 @@ public class EmbeddingRepository {
 
 			serverCon = DriverManager.getConnection(url + "nlp", user, password);
 
-			// Create Table for Data
+//			// Create Table for Data
 			stmt = serverCon.createStatement();
 			stmt.executeUpdate(SqlQueries.CREATE_CUBE_EXTENSTION);
 			stmt.executeUpdate(SqlQueries.CREATE_DICT_TABLE);
@@ -84,6 +84,7 @@ public class EmbeddingRepository {
 	}
 
 public boolean importData(String path) throws SQLException, IOException {
+	
 	return importDictionary(path) && importEmbedding(path);
 	}
 
@@ -223,6 +224,30 @@ private boolean importDictionary(String path) throws IOException, SQLException, 
 			e.printStackTrace();
 		} 
 	}
+	
+	public QueryResult<Double> getCosSimilarity(String w1,int year1, String w2, int year2) throws SQLException {
+		double simmilarity = -1;
+
+		PreparedStatement simStatement = con.prepareStatement("SELECT * FROM sim(?,?,?,?);");
+		
+		simStatement.setString(1, w1);
+		simStatement.setInt(2, year1);
+		simStatement.setString(3, w2);
+		simStatement.setInt(4, year2);
+
+		long startTime = System.currentTimeMillis();
+		ResultSet rs = simStatement.executeQuery();
+		long runTime = System.currentTimeMillis() - startTime;
+
+		if (rs.next()) {
+			simmilarity = rs.getDouble(1);
+			System.out.println("fin");
+		}
+		rs.close();
+		
+		return new QueryResult<Double>(new Double(simmilarity), runTime);
+	}
+	
 	
 	
 	public void disconnect() {

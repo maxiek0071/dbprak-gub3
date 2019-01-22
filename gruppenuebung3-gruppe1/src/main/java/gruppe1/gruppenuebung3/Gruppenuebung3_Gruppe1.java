@@ -23,19 +23,23 @@ public class Gruppenuebung3_Gruppe1 {
 			String srcFile = "src/main/resources/";
 			
 			
-			
 				// Import data to local database
 				System.out.println();
 				System.out.print("Importing embeddings into database... ");
+				boolean importSuccess = false;
 				try {
-					boolean importSuccess =  repo.importData(srcFile);
+					importSuccess =  repo.importData(srcFile);
 					System.out.println("SUCCESS");
-				} 
 				
-//				if(importSuccess) {
-//					System.out.println("SUCCESS");
-//					System.out.println();
-//					List<BenchmarkResult> results = new ArrayList<BenchmarkResult>();
+				
+				if(importSuccess) {
+					System.out.println("SUCCESS");
+					System.out.println();
+					List<BenchmarkResult> results = new ArrayList<BenchmarkResult>();
+					BenchmarkResult result = runBenchmark("BENCHMARk Word Similarty", new SimmilarityBenchmark(), "src/main/resources/temporal_benchmark.txt", repo);
+					if(result != null) {
+						results.add(result);
+					}
 //					
 //					BenchmarkResult result = runBenchmark("BENCHMARk: Analogy ", new AnalogyBenchmark("Analogy"), "src/main/resources/questions-words.txt", repo);
 //					if(result != null) {
@@ -51,7 +55,7 @@ public class Gruppenuebung3_Gruppe1 {
 //					if(result != null) {
 //						results.add(result);
 //					}
-//					BenchmarkResultPrinter.printPerformance(results);
+					BenchmarkResultPrinter.printPerformance(results);
 //					
 //					
 //
@@ -59,7 +63,7 @@ public class Gruppenuebung3_Gruppe1 {
 //				} else {
 //					System.out.println("FAIL");
 //					System.out.println("An error oucurred reading the data. Place the CSV files in the src/main/resources folder");
-//				}
+				}} 
 				
 			catch (IOException | SQLException e) {
 				// TODO Auto-generated catch block
