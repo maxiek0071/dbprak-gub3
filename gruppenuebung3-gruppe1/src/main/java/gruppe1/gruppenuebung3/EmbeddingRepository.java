@@ -49,10 +49,10 @@ public class EmbeddingRepository {
 
 			// Create Table for Data
 			stmt = serverCon.createStatement();
-			stmt.executeUpdate(SqlQueries.CUBE_EXTENSTION);
-			stmt.executeUpdate(SqlQueries.DICT_TABLE);
-			stmt.executeUpdate(SqlQueries.DICT_HASH_INDEX);
-			stmt.executeUpdate(SqlQueries.EMBEDDINGS_TABLE);
+			stmt.executeUpdate(SqlQueries.CREATE_CUBE_EXTENSTION);
+			stmt.executeUpdate(SqlQueries.CREATE_DICT_TABLE);
+			stmt.executeUpdate(SqlQueries.CREATE_DICT_HASH_INDEX);
+			stmt.executeUpdate(SqlQueries.CREATE_EMBEDDINGS_TABLE);
 
 			stmt.close();
 			repo = new EmbeddingRepository(serverCon);
@@ -73,40 +73,10 @@ public class EmbeddingRepository {
 	}
 
 	private void createFunctionsForNearestNeighbors() {
-		String analogySelect = "cube(ARRAY[";
-
-		for (int i = 1; i < 6; i++) {
-			analogySelect += "(cube_ll_coord(a2.vector, " + i + ")  - cube_ll_coord(a1.vector, " + i + ") + cube_ll_coord(b1.vector, " + i + ")),";
-		}
-		analogySelect = analogySelect.substring(0, analogySelect.length() - 1);
-		analogySelect += "])";
-		
-		String function3 = "CREATE OR REPLACE FUNCTION getAnalogousWord(a1w varchar, a2w varchar, b1w varchar) \r\n" + 
-				"RETURNS TABLE(word character varying, sim double precision) AS\r\n" + 
-				"$$ DECLARE\r\n" + 
-				"	contains integer;\r\n" + 
-				"	distinctWords integer;\r\n" + 
-				"	b2 cube;\r\n" + 
-				"BEGIN\r\n" + 
-				"	SELECT count(DISTINCT input.word) INTO distinctWords FROM (Values (a1w), (a2w), (b1w)) input (word);\r\n" + 
-				"	SELECT count(embeddings.word) INTO contains FROM embeddings WHERE embeddings.word=a1w OR embeddings.word=a2w OR embeddings.word=b1w;\r\n" + 
-				"	IF contains <  distinctWords THEN\r\n" + 
-				"		RAISE 'missing % word(s)', distinctWords - contains; \r\n" + 
-				"	ELSE\r\n" + 
-				"		SELECT " + analogySelect + " INTO b2\r\n" + 
-				"		FROM embeddings a1, embeddings a2, embeddings b1\r\n" + 
-				"		WHERE a1.word = a1w AND a2.word = a2w AND b1.word =b1w;\r\n" +
-				"	END IF;\r\n" + 
-				"																			   \r\n" + 
-				"																			   \r\n" + 
-				"	RETURN QUERY  SELECT embeddings.word, (embeddings.vector <-> b2) as sim FROM embeddings order by sim asc limit 1;\r\n" + 
-				"END;$$\r\n" + 
-				"LANGUAGE PLPGSQL;";
-		
-
 		try (Statement statement = con.createStatement()){
-			statement.execute(function3);
-			statement.execute(SqlQueries.DELETE_ALL_INDEXES);
+			statement.execute(SqlQueries.CREATE_KNN_FUNCTION);
+			statement.execute(SqlQueries.CREATE_SIM_FUNCTION);
+			statement.execute(SqlQueries.CREATE_DELETE_ALL_INDEXES_FUNCTION);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -183,8 +153,8 @@ private boolean importDictionary(String path) throws IOException, SQLException, 
 	
 	
 	
-	public QueryResult<Boolean> containsWord(String word) throws SQLException {
-		PreparedStatement stmt = con.prepareStatement("SELECT WORD FROM EMBEDDINGS WHERE word=?");
+	public QueryResult<Boolean> containsWord(String word, int year) throws SQLException {
+		PreparedStatement stmt = con.prepareStatement("SELECT WORD FROM EMBEDDINGS, dict WHERE word_id=id AND word=? AND year=?");
 		stmt.setString(1, word);
 		long startTime = System.currentTimeMillis();
 		ResultSet rs = stmt.executeQuery();
@@ -196,33 +166,6 @@ private boolean importDictionary(String path) throws IOException, SQLException, 
 	}
 
 
-	public QueryResult<String> getAnalogousWord(String a1, String a2, String b1) throws SQLException {
-		String result = null;
-				String sql = "SELECT * FROM getAnalogousWord(?, ?, ?)";
-				PreparedStatement preparedStatement2 = con.prepareStatement(sql);
-				preparedStatement2.setString(1, a1);
-				preparedStatement2.setString(2, a2);
-				preparedStatement2.setString(3, b1);
-				long start = System.currentTimeMillis();
-			try {
-				
-				ResultSet rs = preparedStatement2.executeQuery();
-				if(rs.next()) {
-					result = rs.getString(1);
-				}
-				rs.close();
-			} catch (SQLException e) {
-				throw e;
-			} finally {
-				
-				preparedStatement2.close();
-			}
-			
-			long runtime = System.currentTimeMillis() - start;
-			
-		return new QueryResult<String>(result, runtime);
-	}
-
 	/**
 	 * This method returns the k nearest neighbors of a given word using the cos
 	 * similarity.
@@ -232,11 +175,12 @@ private boolean importDictionary(String path) throws IOException, SQLException, 
 	 * @return
 	 * @throws SQLException
 	 */
-	public QueryResult<List<WordResult>> getKNearestNeighbors(int k, String word) throws SQLException {
+	public QueryResult<List<WordResult>> getKNearestNeighbors(int k, String word, int year) throws SQLException {
 
-		PreparedStatement stmt = con.prepareStatement("SELECT * FROM getknearestneighbors(?,?);");
+		PreparedStatement stmt = con.prepareStatement("SELECT * FROM getKNN(?,?,?);");
 		stmt.setString(1, word);
 		stmt.setInt(2, k);
+		stmt.setInt(3, year);
 
 		long startTime = System.currentTimeMillis();
 		ResultSet result = stmt.executeQuery();
@@ -252,6 +196,8 @@ private boolean importDictionary(String path) throws IOException, SQLException, 
 		
 		return new QueryResult<List<WordResult>>(results, runTime);
 	}
+	
+	
 
 	
 	public void createGistIndex() throws SQLException {

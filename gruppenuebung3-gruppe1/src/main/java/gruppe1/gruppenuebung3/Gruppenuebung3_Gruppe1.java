@@ -29,6 +29,7 @@ public class Gruppenuebung3_Gruppe1 {
 				System.out.print("Importing embeddings into database... ");
 				try {
 					boolean importSuccess =  repo.importData(srcFile);
+					System.out.println("SUCCESS");
 				} 
 				
 //				if(importSuccess) {
