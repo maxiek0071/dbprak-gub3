@@ -31,21 +31,33 @@ public class SqlQueries {
 			"	search cube;\r\n" + 
 			"BEGIN\r\n" +
 			"	SELECT vector INTO search FROM embeddings, dict WHERE embeddings.word_id=id AND dict.word = word_input;" +
-			"	RETURN QUERY  SELECT dict.word as neighbor, (embeddings.vector <-> search) as sim FROM embeddings, dict WHERE embeddings.word_id = dict.id AND embeddings.year = year_input order by sim asc limit k;\r\n" + 
+			"	RETURN QUERY  SELECT dict.word as neighbor, (embeddings.vector <-> search) as sim FROM embeddings, dict WHERE embeddings.word_id = dict.id AND embeddings.year = year_input order by sim desc limit k;\r\n" + 
 			"END;$$\r\n" + 
 			"LANGUAGE PLPGSQL;";
 	
-	public static final String CREATE_NEIGHBORHOOD_CHANGE_FUNCTION = "CREATE OR REPLACE FUNCTION getNeighborhoodChange(word varchar, k integer, year1 integer, year2 integer) \r\n" +
-			"RETURNS TABLE(neighbor character varying, sim character varying) AS \r\n" + 
-			"$$ DECLARE\r\n" + 
-			"	neighbors1 record;\r\n" +
-			"	neighbors2 record;\r\n" + 
-			"BEGIN\r\n" +
-			"	SELECT dict.word INTO neighbors1 FROM getKNN(word, k, year1);" +
-			"	SELECT dict.word INTO neighbors2 FROM getKNN(word, k, year2);" +
-			"	RETURN QURY SELECT * FROM embeddings;\r\n" + 
-			"END;$$\r\n" + 
-			"LANGUAGE PLPGSQL;";
+	public static final String CREATE_NEIGHBORHOOD_CHANGE_FUNCTION = "CREATE OR REPLACE FUNCTION getNeighborhoodChange(word character varying, k integer, year1 integer, year2 integer)\n" + 
+			"			RETURNS TABLE(neighbor character varying, exclusive_in integer) AS \n" + 
+			"			$$ \n" + 
+			"			BEGIN\n" + 
+			"				DROP TABLE IF EXISTS neighbors1 ;\n" + 
+			"				DROP TABLE IF EXISTS neighbors2 ;\n" + 
+			"				DROP TABLE IF EXISTS neighbors_change ;\n" + 
+			"				CREATE TEMPORARY TABLE neighbors1 (neighbor varchar, year int);\n" + 
+			"				CREATE TEMPORARY TABLE neighbors2 (neighbor varchar, year int);\n" + 
+			"				CREATE TEMPORARY TABLE neighbors_change (neighbor varchar, year int);\n" + 
+			"				\n" + 
+			"				INSERT INTO neighbors1 (SELECT getKNN.neighbor, year1 FROM getKNN(word, k, year1));\n" + 
+			"				INSERT INTO neighbors2 (SELECT getKNN.neighbor, year2 FROM getKNN(word, k, year2));\n" + 
+			"				\n" + 
+			"				INSERT INTO neighbors_change (SELECT differences.neighbor, differences.year as exclusive_in FROM  \n" + 
+			"											     (SELECT combined.neighbor, combined.year, count(*) FROM \n" + 
+			"											         (SELECT * FROM neighbors1 UNION (SELECT * FROM neighbors2)) AS combined\n" + 
+			"											     GROUP BY combined.neighbor, combined.year HAVING count(*) <= 1) AS differences\n" + 
+			"												);														   \n" + 
+			"				RETURN QUERY SELECT * FROM neighbors_change; \n" + 
+			"	\n" + 
+			"			END;$$ \n" + 
+			"			LANGUAGE PLPGSQL;;";
 	
 	public static final String CREATE_SIM_FUNCTION = "CREATE OR REPLACE FUNCTION sim(word1 varchar, year1 integer, word2 varchar, year2 integer) \r\n" +
 			"RETURNS double precision AS\r\n" + 

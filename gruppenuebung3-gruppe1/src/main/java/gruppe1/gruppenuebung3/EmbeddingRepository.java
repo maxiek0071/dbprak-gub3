@@ -76,6 +76,7 @@ public class EmbeddingRepository {
 		try (Statement statement = con.createStatement()){
 			statement.execute(SqlQueries.CREATE_KNN_FUNCTION);
 			statement.execute(SqlQueries.CREATE_SIM_FUNCTION);
+			statement.execute(SqlQueries.CREATE_NEIGHBORHOOD_CHANGE_FUNCTION);
 			statement.execute(SqlQueries.CREATE_DELETE_ALL_INDEXES_FUNCTION);
 		} catch (SQLException e) {
 			e.printStackTrace();
