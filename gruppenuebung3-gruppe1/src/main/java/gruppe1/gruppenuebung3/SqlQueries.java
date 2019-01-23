@@ -31,7 +31,7 @@ public class SqlQueries {
 			"	search cube;\r\n" + 
 			"BEGIN\r\n" +
 			"	SELECT vector INTO search FROM embeddings, dict WHERE embeddings.word_id=id AND dict.word = word_input;" +
-			"	RETURN QUERY  SELECT dict.word as neighbor, (embeddings.vector <-> search) as sim FROM embeddings, dict WHERE embeddings.word_id = dict.id AND embeddings.year = year_input order by sim desc limit k;\r\n" + 
+			"	RETURN QUERY  SELECT dict.word as neighbor, (embeddings.vector <-> search) as sim FROM embeddings, dict WHERE embeddings.word_id = dict.id AND embeddings.year = year_input order by sim asc limit k;\r\n" + 
 			"END;$$\r\n" + 
 			"LANGUAGE PLPGSQL;";
 	
