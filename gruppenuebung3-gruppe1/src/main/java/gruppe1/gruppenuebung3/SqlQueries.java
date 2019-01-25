@@ -52,10 +52,8 @@ public class SqlQueries {
 			"$$ DECLARE "
 			+ "  simmilarity double precision;\r\n"
 			+ " BEGIN\r\n" +
-			"  SELECT embeddings1.vector <-> embeddings2.vector INTO simmilarity FROM embeddings embeddings1, embeddings embeddings2 WHERE embeddings1.word = word1 AND embeddings2.word = word2 AND embeddings1.year = year1 AND embeddings2.year = year2 ;\r\n"
+			"  SELECT (cube_ll_coord(e1.vector,1)*cube_ll_coord(e2.vector,1)) + (cube_ll_coord(e1.vector,2)*cube_ll_coord(e2.vector,2)) + (cube_ll_coord(e1.vector,3)*cube_ll_coord(e2.vector,3)) + (cube_ll_coord(e1.vector,4)*cube_ll_coord(e2.vector,4)) +(cube_ll_coord(e1.vector,5)*cube_ll_coord(e2.vector,5))  INTO simmilarity FROM embeddings e1, embeddings e2 WHERE e1.word = word1 AND e2.word = word2 AND e1.year = year1 AND e2.year = year2 ;\r\n"
 			 + "	RETURN simmilarity; \r\n" + 
 			" END;$$\r\n" + 
 			"LANGUAGE PLPGSQL;";
-	
-	
 }
