@@ -60,6 +60,7 @@ public class EmbeddingRepository {
 
 		} catch (SQLException e) {
 			repo = null;
+			e.printStackTrace();
 			if (serverCon != null) {
 				try {
 					serverCon.close();
@@ -168,36 +169,36 @@ private boolean importDictionary(String path) throws IOException, SQLException, 
 	}
 
 
-	/**
-	 * This method returns the k nearest neighbors of a given word using the cos
-	 * similarity.
-	 * 
-	 * @param k
-	 * @param word
-	 * @return
-	 * @throws SQLException
-	 */
-	public QueryResult<List<WordResult>> getKNearestNeighbors(int k, String word, int year) throws SQLException {
-
-		PreparedStatement stmt = con.prepareStatement("SELECT * FROM getKNN(?,?,?);");
-		stmt.setString(1, word);
-		stmt.setInt(2, k);
-		stmt.setInt(3, year);
-
-		long startTime = System.currentTimeMillis();
-		ResultSet result = stmt.executeQuery();
-		long runTime = System.currentTimeMillis() - startTime;
-
-		List<WordResult> results = new ArrayList<WordResult>();
-
-		while (result.next()) {
-			results.add(new WordResult(result.getString("word"), result.getDouble("sim")));
-		}
-		result.close();
-		stmt.close();		
-		
-		return new QueryResult<List<WordResult>>(results, runTime);
-	}
+//	/**
+//	 * This method returns the k nearest neighbors of a given word using the cos
+//	 * similarity.
+//	 * 
+//	 * @param k
+//	 * @param word
+//	 * @return
+//	 * @throws SQLException
+//	 */
+//	public QueryResult<List<WordResult>> getKNearestNeighbors(int k, String word, int year) throws SQLException {
+//
+//		PreparedStatement stmt = con.prepareStatement("SELECT * FROM getKNN(?,?,?);");
+//		stmt.setString(1, word);
+//		stmt.setInt(2, k);
+//		stmt.setInt(3, year);
+//
+//		long startTime = System.currentTimeMillis();
+//		ResultSet result = stmt.executeQuery();
+//		long runTime = System.currentTimeMillis() - startTime;
+//
+//		List<WordResult> results = new ArrayList<WordResult>();
+//
+//		while (result.next()) {
+//			results.add(new WordResult(result.getString("word"), result.getDouble("sim")));
+//		}
+//		result.close();
+//		stmt.close();		
+//		
+//		return new QueryResult<List<WordResult>>(results, runTime);
+//	}
 	
 	
 
@@ -225,6 +226,31 @@ private boolean importDictionary(String path) throws IOException, SQLException, 
 			e.printStackTrace();
 		} 
 	}
+	public QueryResult<ArrayList<Neighbor>> getNeighborhoodChange(String w1,int year1, int year2) throws SQLException {
+		{
+			
+			PreparedStatement neighborStatement = con.prepareStatement("SELECT * FROM getNeighborhoodChange(?,?,?,?);");
+			
+			neighborStatement.setString(1, w1);
+			neighborStatement.setInt(2, 10);
+			neighborStatement.setInt(3, year1);
+			neighborStatement.setInt(4, year2);
+			
+			long startTime = System.currentTimeMillis();
+			ResultSet rs = neighborStatement.executeQuery();
+			long runTime = System.currentTimeMillis() - startTime;
+			
+			ArrayList<Neighbor> neighbor = new  ArrayList<>();
+			
+			while (rs.next()) {
+				neighbor.add(new Neighbor(rs.getString(1), rs.getInt(1)));
+			}
+			
+			return new QueryResult<ArrayList<Neighbor>>(neighbor, runTime);
+		}}
+	
+	
+	
 	
 	public QueryResult<Double> getCosSimilarity(String w1,int year1, String w2, int year2) throws SQLException {
 		double simmilarity = -1;
@@ -242,7 +268,6 @@ private boolean importDictionary(String path) throws IOException, SQLException, 
 
 		if (rs.next()) {
 			simmilarity = rs.getDouble(1);
-			System.out.println("fin");
 		}
 		rs.close();
 		

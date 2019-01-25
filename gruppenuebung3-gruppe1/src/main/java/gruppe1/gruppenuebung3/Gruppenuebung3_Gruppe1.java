@@ -36,15 +36,15 @@ public class Gruppenuebung3_Gruppe1 {
 					System.out.println("SUCCESS");
 					System.out.println();
 					List<BenchmarkResult> results = new ArrayList<BenchmarkResult>();
-					BenchmarkResult result = runBenchmark("BENCHMARk Word Similarty", new SimmilarityBenchmark(), "src/main/resources/temporal_benchmark.txt", repo);
-					if(result != null) {
-						results.add(result);
-					}
-//					
-//					BenchmarkResult result = runBenchmark("BENCHMARk: Analogy ", new AnalogyBenchmark("Analogy"), "src/main/resources/questions-words.txt", repo);
+//					BenchmarkResult result = runBenchmark("BENCHMARk Word Similarty", new SimmilarityBenchmark(), "src/main/resources/temporal_benchmark.txt", repo);
 //					if(result != null) {
 //						results.add(result);
 //					}
+//					
+					BenchmarkResult	 result = runBenchmark("BENCHMARk: NeighborsBenchmark ", new NeighborsBenchmark("NeighborsBenchmark"), "src/main/resources/temporal_benchmark.txt", repo);
+					if(result != null) {
+						results.add(result);
+					}
 //					
 //					result = runBenchmark("BENCHMARK: Analogy with Gist ", new AnalogyGistBenchmark(), "src/main/resources/questions-words.txt", repo);
 //					if(result != null) {
