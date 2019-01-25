@@ -6,10 +6,8 @@ public class SqlQueries {
 
 	}
 
-	public static final String CREATE_EMBEDDINGS_TABLE = "CREATE TABLE public.embeddings(word_id int,vector cube NOT NULL, year int NOT NULL,"
-			+ "  FOREIGN KEY (word_id) REFERENCES dict (id))";
+	public static final String CREATE_EMBEDDINGS_TABLE = "CREATE TABLE public.embeddings(word character varying NOT NULL,vector cube NOT NULL, year int NOT NULL)";
 	public static final String CREATE_DICT_HASH_INDEX = "CREATE INDEX ON dict USING hash (word);";
-	public static final String CREATE_DICT_TABLE = "CREATE TABLE dict(id integer primary key, word character varying NOT NULL);";
 	public static final String CREATE_CUBE_EXTENSTION = "CREATE EXTENSION IF NOT EXISTS cube";
 	public static final String CREATE_DELETE_ALL_INDEXES_FUNCTION = "CREATE OR REPLACE FUNCTION drop_all_indexes() RETURNS INTEGER AS $$\r\n" + 
 			"BEGIN\r\n" + 
@@ -30,8 +28,8 @@ public class SqlQueries {
 			"$$ DECLARE\r\n" + 
 			"	search cube;\r\n" + 
 			"BEGIN\r\n" +
-			"	SELECT vector INTO search FROM embeddings, dict WHERE embeddings.word_id=id AND dict.word = word_input;" +
-			"	RETURN QUERY  SELECT dict.word as neighbor, (embeddings.vector <-> search) as sim FROM embeddings, dict WHERE embeddings.word_id = dict.id AND embeddings.year = year_input order by sim asc limit k;\r\n" + 
+			"	SELECT vector INTO search FROM embeddings WHERE embeddings.word=word_input;" +
+			"	RETURN QUERY  SELECT embeddings.word as neighbor, (embeddings.vector <-> search) as sim FROM embeddings WHERE embeddings.year = year_input order by sim asc limit k;\r\n" + 
 			"END;$$\r\n" + 
 			"LANGUAGE PLPGSQL;";
 	
@@ -64,7 +62,7 @@ public class SqlQueries {
 			"$$ DECLARE "
 			+ "  simmilarity double precision;\r\n"
 			+ " BEGIN\r\n" +
-			"  SELECT embeddings1.vector <-> embeddings2.vector INTO simmilarity FROM embeddings embeddings1, embeddings embeddings2, dict dict1, dict dict2 WHERE embeddings1.word_id = dict1.id AND embeddings2.word_id = dict2.id AND dict1.word = word1 AND dict2.word = word2 AND embeddings1.year = year1 AND embeddings2.year = year2 ;\r\n"
+			"  SELECT embeddings1.vector <-> embeddings2.vector INTO simmilarity FROM embeddings embeddings1, embeddings embeddings2 WHERE embeddings1.word = word1 AND embeddings2.word = word2 AND embeddings1.year = year1 AND embeddings2.year = year2 ;\r\n"
 			 + "	RETURN simmilarity; \r\n" + 
 			" END;$$\r\n" + 
 			"LANGUAGE PLPGSQL;";

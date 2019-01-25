@@ -50,8 +50,8 @@ public class EmbeddingRepository {
 //			// Create Table for Data
 			stmt = serverCon.createStatement();
 			stmt.executeUpdate(SqlQueries.CREATE_CUBE_EXTENSTION);
-			stmt.executeUpdate(SqlQueries.CREATE_DICT_TABLE);
-			stmt.executeUpdate(SqlQueries.CREATE_DICT_HASH_INDEX);
+			//stmt.executeUpdate(SqlQueries.CREATE_DICT_TABLE);
+			//stmt.executeUpdate(SqlQueries.CREATE_DICT_HASH_INDEX);
 			stmt.executeUpdate(SqlQueries.CREATE_EMBEDDINGS_TABLE);
 
 			stmt.close();
@@ -86,15 +86,9 @@ public class EmbeddingRepository {
 	}
 
 public boolean importData(String path) throws SQLException, IOException {
-	
-	return importDictionary(path) && importEmbedding(path);
-	}
-
-
-private boolean importEmbedding(String path) throws SQLException, IOException {
 	boolean success = false;
 	try(BufferedReader in = new BufferedReader(new FileReader(new File(path+ "out-normalized.csv")));) {
-		String insertStmt = "INSERT INTO embeddings (word_id,vector,year) VALUES (?,?::cube,?); ";
+		String insertStmt = "INSERT INTO embeddings (word,vector,year) VALUES (?,?::cube,?); ";
 	
 		try	(PreparedStatement st = con.prepareStatement(insertStmt)){
 			String line;
@@ -105,8 +99,8 @@ private boolean importEmbedding(String path) throws SQLException, IOException {
 					skipFirst = false;
 					continue;
 				}
-				String wordIndex = line.substring(0, line.indexOf(";"));
-				st.setInt(1, new Integer(wordIndex));
+				String word = line.substring(0, line.indexOf(";"));
+				st.setString(1, word);
 				st.setObject(2,dimsToCube(line));
 				st.setInt(3, new Integer(line.split(";")[6]));
 				st.addBatch();
@@ -118,29 +112,6 @@ private boolean importEmbedding(String path) throws SQLException, IOException {
 			return success;
 	}
 
-
-
-
-private boolean importDictionary(String path) throws IOException, SQLException, FileNotFoundException {
-	boolean success = false;
-		try(BufferedReader in = new BufferedReader(new FileReader(new File(path+ "dict.csv")));) {
-		
-		String insertStmt = "INSERT INTO dict (id,word) VALUES (?,?); ";
-		
-	try	(PreparedStatement st = con.prepareStatement(insertStmt)){
-			
-		String line;
-		while ((line = in.readLine() ) != null) {
-			st.setInt(1, new Integer(line.split(";")[0]));
-			st.setObject(2,line.split(";")[1]);
-			st.addBatch();
-		}
-		st.executeBatch();
-		success = true;
-	}
-		}
-		return success;
-}
 
 	private String dimsToCube( String line) {
 		String allDims = line.substring(line.indexOf(";") + 1, line.lastIndexOf(";")).replace(";", ",");
