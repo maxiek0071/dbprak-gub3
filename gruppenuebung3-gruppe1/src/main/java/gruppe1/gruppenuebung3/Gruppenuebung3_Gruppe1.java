@@ -13,7 +13,7 @@ public class Gruppenuebung3_Gruppe1 {
 
 	public static void main(String[] args) {
 		System.out.print("Setup: connecting to database..");
-		EmbeddingRepository repo = EmbeddingRepository.createRepository("localhost", "5432", "postgres", "seLect14");
+		EmbeddingRepository repo = EmbeddingRepository.createRepository("localhost", "5433", "postgres", "seLect14");
 		
 		
 		if(repo != null) {
@@ -36,15 +36,24 @@ public class Gruppenuebung3_Gruppe1 {
 					System.out.println("SUCCESS");
 					System.out.println();
 					List<BenchmarkResult> results = new ArrayList<BenchmarkResult>();
-//					BenchmarkResult result = runBenchmark("BENCHMARk Word Similarty", new SimmilarityBenchmark(), "src/main/resources/temporal_benchmark.txt", repo);
-//					if(result != null) {
-//						results.add(result);
-//					}
-//					
-					BenchmarkResult	 result = runBenchmark("BENCHMARk: NeighborsBenchmark ", new NeighborsBenchmark("NeighborsBenchmark"), "src/main/resources/temporal_benchmark.txt", repo);
+					BenchmarkResult result = runBenchmark("BENCHMARk Word Similarty", new SimmilarityBenchmark("Word Similarty"), "src/main/resources/temporal_benchmark.txt", repo);
 					if(result != null) {
 						results.add(result);
 					}
+					result = runBenchmark("BENCHMARk Word Similarty Btree", new SimiliartyBTreeBenchmark("Word Similarty BTree"), "src/main/resources/temporal_benchmark.txt", repo);
+					if(result != null) {
+						results.add(result);
+					}
+					result = runBenchmark("BENCHMARk Word Similarty Hash", new SimiliartyHashBenchmark("Word Similarty Hash"), "src/main/resources/temporal_benchmark.txt", repo);
+					if(result != null) {
+						results.add(result);
+					}
+					
+//					
+//					BenchmarkResult	 result = runBenchmark("BENCHMARk: NeighborsBenchmark ", new NeighborsBenchmark("NeighborsBenchmark"), "src/main/resources/temporal_benchmark.txt", repo);
+//					if(result != null) {
+//						results.add(result);
+//					}
 //					
 //					result = runBenchmark("BENCHMARK: Analogy with Gist ", new AnalogyGistBenchmark(), "src/main/resources/questions-words.txt", repo);
 //					if(result != null) {
