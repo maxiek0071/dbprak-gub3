@@ -2,7 +2,6 @@
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.sql.Connection;
@@ -12,7 +11,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.List;
 
 public class EmbeddingRepository {
 		private Connection con;
@@ -50,8 +48,6 @@ public class EmbeddingRepository {
 //			// Create Table for Data
 			stmt = serverCon.createStatement();
 			stmt.executeUpdate(SqlQueries.CREATE_CUBE_EXTENSTION);
-			//stmt.executeUpdate(SqlQueries.CREATE_DICT_TABLE);
-			//stmt.executeUpdate(SqlQueries.CREATE_DICT_HASH_INDEX);
 			stmt.executeUpdate(SqlQueries.CREATE_EMBEDDINGS_TABLE);
 
 			stmt.close();
@@ -78,7 +74,6 @@ public class EmbeddingRepository {
 			statement.execute(SqlQueries.CREATE_KNN_FUNCTION);
 			statement.execute(SqlQueries.CREATE_SIM_FUNCTION);
 			statement.execute(SqlQueries.CREATE_NEIGHBORHOOD_CHANGE_FUNCTION);
-			statement.execute(SqlQueries.CREATE_DELETE_ALL_INDEXES_FUNCTION);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -124,81 +119,31 @@ public boolean importData(String path) throws SQLException, IOException {
 		return limitedDims;
 	}
 	
-	
-	
-	
-	public QueryResult<Boolean> containsWord(String word, int year) throws SQLException {
-		PreparedStatement stmt = con.prepareStatement("SELECT WORD FROM EMBEDDINGS, dict WHERE word_id=id AND word=? AND year=?");
-		stmt.setString(1, word);
-		long startTime = System.currentTimeMillis();
-		ResultSet rs = stmt.executeQuery();
-		long runTime = System.currentTimeMillis() - startTime;
-		boolean contains = rs.next();
-		rs.close();
-		stmt.close();
-		return new QueryResult<Boolean>(new Boolean(contains), runTime);
-	}
-
-
-//	/**
-//	 * This method returns the k nearest neighbors of a given word using the cos
-//	 * similarity.
-//	 * 
-//	 * @param k
-//	 * @param word
-//	 * @return
-//	 * @throws SQLException
-//	 */
-//	public QueryResult<List<WordResult>> getKNearestNeighbors(int k, String word, int year) throws SQLException {
-//
-//		PreparedStatement stmt = con.prepareStatement("SELECT * FROM getKNN(?,?,?);");
-//		stmt.setString(1, word);
-//		stmt.setInt(2, k);
-//		stmt.setInt(3, year);
-//
-//		long startTime = System.currentTimeMillis();
-//		ResultSet result = stmt.executeQuery();
-//		long runTime = System.currentTimeMillis() - startTime;
-//
-//		List<WordResult> results = new ArrayList<WordResult>();
-//
-//		while (result.next()) {
-//			results.add(new WordResult(result.getString("word"), result.getDouble("sim")));
-//		}
-//		result.close();
-//		stmt.close();		
-//		
-//		return new QueryResult<List<WordResult>>(results, runTime);
-//	}
-	
-	
-
-	
 	public void createGistIndex() throws SQLException {
 		deleteAllIndexes();
 		Statement statement = con.createStatement();
-		statement.execute("CREATE INDEX vector_gist_index ON  embeddings USING gist (vector);");
+		statement.execute(SqlQueries.CREATE_GIST_INDEX);
 		statement.close();
 	}
 	
-	public void createBTreeIndex() throws SQLException{
+	public void createHashIndex() throws SQLException{
 		deleteAllIndexes();
 		Statement statement = con.createStatement();
-		statement.execute("CREATE INDEX vector_btree_index ON embeddings USING btree(vector);");
+		statement.execute(SqlQueries.CREATE_HASH_INDEX);
 		statement.close();
 		
 	}
 	
 	public void deleteAllIndexes() {
 		try (Statement statement = con.createStatement()) {
-			statement.execute("DROP INDEX IF EXISTS vector_btree_index; DROP INDEX IF EXISTS vector_gist_index;");
+			statement.execute(SqlQueries.DELETE_ALL_INDEXES);
 			statement.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} 
 	}
+	
 	public QueryResult<ArrayList<Neighbor>> getNeighborhoodChange(String w1,int year1, int year2) throws SQLException {
-		{
 			
 			PreparedStatement neighborStatement = con.prepareStatement("SELECT * FROM getNeighborhoodChange(?,?,?,?);");
 			
@@ -214,13 +159,11 @@ public boolean importData(String path) throws SQLException, IOException {
 			ArrayList<Neighbor> neighbor = new  ArrayList<>();
 			
 			while (rs.next()) {
-				neighbor.add(new Neighbor(rs.getString(1), rs.getInt(1)));
+				neighbor.add(new Neighbor(rs.getString(1), rs.getInt(2)));
 			}
 			
 			return new QueryResult<ArrayList<Neighbor>>(neighbor, runTime);
-		}}
-	
-	
+		}
 	
 	
 	public QueryResult<Double> getCosSimilarity(String w1,int year1, String w2, int year2) throws SQLException {
@@ -244,8 +187,6 @@ public boolean importData(String path) throws SQLException, IOException {
 		
 		return new QueryResult<Double>(new Double(simmilarity), runTime);
 	}
-	
-	
 	
 	public void disconnect() {
 		if (con != null) {

@@ -7,21 +7,11 @@ public class SqlQueries {
 	}
 
 	public static final String CREATE_EMBEDDINGS_TABLE = "CREATE TABLE public.embeddings(word character varying NOT NULL,vector cube NOT NULL, year int NOT NULL)";
-	public static final String CREATE_DICT_HASH_INDEX = "CREATE INDEX ON dict USING hash (word);";
+	public static final String CREATE_HASH_INDEX = "CREATE INDEX word_hash_index ON embeddings USING hash(word);";
+	public static final String CREATE_GIST_INDEX = "CREATE INDEX vector_gist_index ON  embeddings USING gist (vector);";
+	
 	public static final String CREATE_CUBE_EXTENSTION = "CREATE EXTENSION IF NOT EXISTS cube";
-	public static final String CREATE_DELETE_ALL_INDEXES_FUNCTION = "CREATE OR REPLACE FUNCTION drop_all_indexes() RETURNS INTEGER AS $$\r\n" + 
-			"BEGIN\r\n" + 
-			"   EXECUTE (\r\n" + 
-			"   SELECT 'DROP INDEX ' || string_agg(indexrelid::regclass::text, ', ')\r\n" + 
-			"   FROM   pg_index  i\r\n" + 
-			"   LEFT   JOIN pg_depend d ON d.objid = i.indexrelid\r\n" + 
-			"                          AND d.deptype = 'i'\r\n" + 
-			"   WHERE  i.indrelid = 'embeddings'::regclass\r\n" + 
-			"   AND    d.objid IS NULL\r\n" + 
-			"   );\r\n" + 
-			"RETURN 1;\r\n" + 
-			"END\r\n" + 
-			"$$ LANGUAGE plpgsql;";
+	public static final String DELETE_ALL_INDEXES = "DROP INDEX IF EXISTS word_hash_index; DROP INDEX IF EXISTS vector_gist_index;";
 	
 	public static final String CREATE_KNN_FUNCTION = "CREATE OR REPLACE FUNCTION getKNN( word_input varchar, k integer, year_input integer) \r\n" +
 			"RETURNS TABLE(neighbor character varying, sim double precision) AS \r\n" + 
