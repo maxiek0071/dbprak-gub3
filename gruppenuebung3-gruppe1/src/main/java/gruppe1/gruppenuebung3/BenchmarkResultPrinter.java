@@ -26,7 +26,7 @@ public class BenchmarkResultPrinter {
 		
 		
 		DefaultCategoryDataset performanceData = new DefaultCategoryDataset();
-		DefaultCategoryDataset successData = new DefaultCategoryDataset();
+		DefaultCategoryDataset varianceData = new DefaultCategoryDataset();
 		String bmName;
 		for(BenchmarkResult bm: results) {
 			if (bm != null) {
@@ -34,8 +34,7 @@ public class BenchmarkResultPrinter {
 				performanceData.addValue(bm.getMin(), "min", bmName);
 				performanceData.addValue(bm.getAvg(), "avg", bmName);
 				performanceData.addValue(bm.getMax(), "max", bmName);
-				performanceData.addValue(bm.getVariance(), "var", bmName);
-				successData.addValue(bm.getSuccessRate(), "success rate", bmName);
+				varianceData.addValue(bm.getVariance(), "var", bmName);
 			}
 			
 		}
@@ -43,7 +42,7 @@ public class BenchmarkResultPrinter {
 		JFreeChart chart = ChartFactory.createBarChart("Performance Results", "Benchmark", "Milliseconds", performanceData);
 		frm.add(new ChartPanel(chart));
 		
-		chart = ChartFactory.createBarChart("Success Rate", "Benchmark", "Success Rate", successData);
+		chart = ChartFactory.createBarChart("Variance", "Benchmark", "Variance", varianceData);
 		frm.add(new ChartPanel(chart));
 		
 		frm.setVisible(true);
