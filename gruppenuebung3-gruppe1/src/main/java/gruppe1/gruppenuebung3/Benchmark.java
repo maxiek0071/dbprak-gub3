@@ -53,6 +53,7 @@ public abstract class Benchmark {
 				
 				result.addObservation(runTime, success);
 			} catch (SQLException e) {
+				e.printStackTrace();
 			}
 		}
 		

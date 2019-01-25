@@ -10,8 +10,8 @@ import java.nio.charset.Charset;
 
 public class SimmilarityBenchmark extends Benchmark {
 
-	public SimmilarityBenchmark() {
-		super("SimmilarityBenchmark");
+	public SimmilarityBenchmark(String name) {
+		super(name);
 	}
 	
 	@Override

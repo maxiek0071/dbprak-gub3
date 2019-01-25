@@ -120,16 +120,20 @@ public boolean importData(String path) throws SQLException, IOException {
 	}
 	
 	public void createGistIndex() throws SQLException {
-		deleteAllIndexes();
 		Statement statement = con.createStatement();
 		statement.execute(SqlQueries.CREATE_GIST_INDEX);
 		statement.close();
 	}
 	
 	public void createHashIndex() throws SQLException{
-		deleteAllIndexes();
 		Statement statement = con.createStatement();
 		statement.execute(SqlQueries.CREATE_HASH_INDEX);
+		statement.close();
+		
+	}
+	public void createBTreeIndex() throws SQLException{
+		Statement statement = con.createStatement();
+		statement.execute(SqlQueries.CREATE_BTREE_INDEX);
 		statement.close();
 		
 	}
