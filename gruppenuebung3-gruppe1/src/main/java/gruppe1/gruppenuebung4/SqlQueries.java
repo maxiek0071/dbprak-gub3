@@ -1,4 +1,4 @@
-package gruppe1.gruppenuebung3;
+package gruppe1.gruppenuebung4;
 
 public class SqlQueries {
 
@@ -10,9 +10,10 @@ public class SqlQueries {
 	public static final String CREATE_HASH_INDEX = "CREATE INDEX word_hash_index ON embeddings USING hash(word);";
 	public static final String CREATE_BTREE_INDEX = "CREATE INDEX word_btree_index ON embeddings USING btree(word);";
 	public static final String CREATE_GIST_INDEX = "CREATE INDEX vector_gist_index ON  embeddings USING gist (vector);";
+	public static final String CREATE_QUADTREE_INDEX = "CREATE INDEX point_quadtree_index ON  embeddings USING spgist(point quad_point_ops);";
 	
 	public static final String CREATE_CUBE_EXTENSTION = "CREATE EXTENSION IF NOT EXISTS cube";
-	public static final String DELETE_ALL_INDEXES = "DROP INDEX IF EXISTS word_hash_index; DROP INDEX IF EXISTS vector_gist_index;DROP INDEX IF EXISTS word_btree_index;";
+	public static final String DELETE_ALL_INDEXES = "DROP INDEX IF EXISTS word_hash_index; DROP INDEX IF EXISTS vector_gist_index;DROP INDEX IF EXISTS word_btree_index; DROP INDEX IF EXISTS point_quadtree_index;";
 	
 	public static final String CREATE_KNN_FUNCTION = "CREATE OR REPLACE FUNCTION getKNN( word_input varchar, k integer, year_input integer) \r\n" +
 			"RETURNS TABLE(neighbor character varying, sim double precision) AS \r\n" + 

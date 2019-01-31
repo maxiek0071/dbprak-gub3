@@ -1,4 +1,4 @@
-package gruppe1.gruppenuebung3;
+package gruppe1.gruppenuebung4;
 
 import java.sql.SQLException;
 
@@ -13,7 +13,7 @@ public class NeighborQuadtreeBenchmark extends NeighborsBenchmark {
 		repo.setKnnColumnTo("point");
 		try {
 			repo.deleteAllIndexes();
-			repo.createGistIndex();
+			repo.createQuadtreeIndex();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}

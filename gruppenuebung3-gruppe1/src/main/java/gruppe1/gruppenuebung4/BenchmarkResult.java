@@ -1,4 +1,4 @@
-package gruppe1.gruppenuebung3;
+package gruppe1.gruppenuebung4;
 
 public class BenchmarkResult {
 	private String benchmarkName;

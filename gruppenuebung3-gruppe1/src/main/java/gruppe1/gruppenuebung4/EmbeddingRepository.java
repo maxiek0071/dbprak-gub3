@@ -1,4 +1,4 @@
- package gruppe1.gruppenuebung3;
+ package gruppe1.gruppenuebung4;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -135,6 +135,13 @@ public class EmbeddingRepository {
 	public void createBTreeIndex() throws SQLException{
 		Statement statement = con.createStatement();
 		statement.execute(SqlQueries.CREATE_BTREE_INDEX);
+		statement.close();
+		
+	}
+	
+	public void createQuadtreeIndex() throws SQLException{
+		Statement statement = con.createStatement();
+		statement.execute(SqlQueries.CREATE_QUADTREE_INDEX);
 		statement.close();
 		
 	}

@@ -1,4 +1,4 @@
-package gruppe1.gruppenuebung3;
+package gruppe1.gruppenuebung4;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class Gruppenuebung3_Gruppe1 {
+public class Gruppenuebung4_Gruppe1 {
 
 	public static void main(String[] args) {
 		System.out.print("Setup: connecting to database..");
