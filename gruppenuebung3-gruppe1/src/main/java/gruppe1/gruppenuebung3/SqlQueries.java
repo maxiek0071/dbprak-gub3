@@ -6,7 +6,7 @@ public class SqlQueries {
 
 	}
 
-	public static final String CREATE_EMBEDDINGS_TABLE = "CREATE TABLE public.embeddings(word character varying NOT NULL,vector cube NOT NULL, year int NOT NULL,PRIMARY KEY (word,year))";
+	public static final String CREATE_EMBEDDINGS_TABLE = "CREATE TABLE public.embeddings(word character varying NOT NULL,vector cube NOT NULL,point point NOT NULL, year int NOT NULL,PRIMARY KEY (word,year))";
 	public static final String CREATE_HASH_INDEX = "CREATE INDEX word_hash_index ON embeddings USING hash(word);";
 	public static final String CREATE_BTREE_INDEX = "CREATE INDEX word_btree_index ON embeddings USING btree(word);";
 	public static final String CREATE_GIST_INDEX = "CREATE INDEX vector_gist_index ON  embeddings USING gist (vector);";

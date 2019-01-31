@@ -80,44 +80,45 @@ public class EmbeddingRepository {
 
 	}
 
-public boolean importData(String path) throws SQLException, IOException {
-	boolean success = false;
-	try(BufferedReader in = new BufferedReader(new FileReader(new File(path+ "out-normalized.csv")));) {
-		String insertStmt = "INSERT INTO embeddings (word,vector,year) VALUES (?,?::cube,?); ";
-	
-		try	(PreparedStatement st = con.prepareStatement(insertStmt)){
-			String line;
-			boolean skipFirst = true;
-			while ((line = in.readLine() ) != null) {
-				
-				if (skipFirst) {
-					skipFirst = false;
-					continue;
+	public boolean importData(String path) throws SQLException, IOException {
+		boolean success = false;
+		try(BufferedReader in = new BufferedReader(new FileReader(new File(path+ "out-normalized.csv")));) {
+			String insertStmt = "INSERT INTO embeddings (word,vector,point, year) VALUES (?,?::cube,?::point,?); ";
+		
+			try	(PreparedStatement st = con.prepareStatement(insertStmt)){
+				String line;
+				boolean skipFirst = true;
+				while ((line = in.readLine() ) != null) {
+					
+					if (skipFirst) {
+						skipFirst = false;
+						continue;
+					}
+					String word = line.substring(0, line.indexOf(";"));
+					st.setString(1, word);
+					st.setObject(2,dimsToObject(line,5));
+					st.setObject(3,dimsToObject(line,2));
+					st.setInt(4, new Integer(line.split(";")[6]));
+					st.addBatch();
+					
 				}
-				String word = line.substring(0, line.indexOf(";"));
-				st.setString(1, word);
-				st.setObject(2,dimsToCube(line));
-				st.setInt(3, new Integer(line.split(";")[6]));
-				st.addBatch();
-				
-			}
-			st.executeBatch();
-			success = true;
-		}}
-			return success;
-	}
-
-
-	private String dimsToCube( String line) {
-		String allDims = line.substring(line.indexOf(";") + 1, line.lastIndexOf(";")).replace(";", ",");
-		String[] dimsSplitted = allDims.split(",");
-		String limitedDims = "";
-		for (int i =0; i< 5;i++) {
-			limitedDims += dimsSplitted[i] + ",";
+				st.executeBatch();
+				success = true;
+			}}
+				return success;
 		}
-		limitedDims = "(" + limitedDims.substring(0,limitedDims.length()-1) + ")";
-		return limitedDims;
-	}
+
+
+		private String dimsToObject( String line, int resultSize) {
+			String allDims = line.substring(line.indexOf(";") + 1, line.lastIndexOf(";")).replace(";", ",");
+			String[] dimsSplitted = allDims.split(",");
+			String limitedDims = "";
+			for (int i =0; i< resultSize;i++) {
+				limitedDims += dimsSplitted[i] + ",";
+			}
+			limitedDims = "(" + limitedDims.substring(0,limitedDims.length()-1) + ")";
+			return limitedDims;
+		}
 	
 	public void createGistIndex() throws SQLException {
 		Statement statement = con.createStatement();
