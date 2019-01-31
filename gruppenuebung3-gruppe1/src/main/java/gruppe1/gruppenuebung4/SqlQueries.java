@@ -21,7 +21,7 @@ public class SqlQueries {
 			"	search cube;\r\n" + 
 			"BEGIN\r\n" +
 			"	SELECT vector INTO search FROM embeddings WHERE embeddings.word=word_input AND embeddings.year = year_input;" +
-			"	RETURN QUERY  SELECT embeddings.word as neighbor, (embeddings.vector <-> search) as sim FROM embeddings WHERE embeddings.year = year_input order by sim asc limit k;\r\n" + 
+			"	RETURN QUERY  SELECT embeddings.word as neighbor, (embeddings.vector <-> search) as sim FROM embeddings WHERE embeddings.year = year_input AND embeddings.word != word_input order by sim asc limit k;\r\n" + 
 			"END;$$\r\n" + 
 			"LANGUAGE PLPGSQL;";
 	
@@ -31,7 +31,7 @@ public class SqlQueries {
 			"	search point;\r\n" + 
 			"BEGIN\r\n" +
 			"	SELECT point INTO search FROM embeddings WHERE embeddings.word=word_input AND embeddings.year = year_input;" +
-			"	RETURN QUERY  SELECT embeddings.word as neighbor, (embeddings.point <-> search) as sim FROM embeddings WHERE embeddings.year = year_input order by sim asc limit k;\r\n" + 
+			"	RETURN QUERY  SELECT embeddings.word as neighbor, (embeddings.point <-> search) as sim FROM embeddings WHERE embeddings.year = year_input AND embeddings.word != word_input order by sim asc limit k;\r\n" + 
 			"END;$$\r\n" + 
 			"LANGUAGE PLPGSQL;";
 	
