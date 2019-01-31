@@ -8,8 +8,6 @@ from sklearn import manifold
 from sklearn.decomposition import PCA
 
 first = True
-dict = dict()
-counter = 0
 class Embedding:
 
     def __init__(self, vecs, vocab):
@@ -21,17 +19,7 @@ class Embedding:
         iw = pickle.load(open(path + "-vocab.pkl", "rb"),encoding='latin1')
         return cls(mat, iw) 
 
-    def writeDict():
-        global dict
-        with open('dict.csv', 'w',encoding='utf-8',newline='') as csv_file:
-            writer = csv.writer(csv_file, delimiter=';')
-            for key, value in dict.items():
-                writer.writerow([value, key])
-		
-		
     def writeCSV(self,year):
-        global counter
-        global dict
         global first
         filename='out'
         filename = filename + '-normalized'	
@@ -52,12 +40,6 @@ class Embedding:
             for i in range(0, len(self.m)):
                 line = []
                 content = self.iw[i]
-                if dict.get(content) is not None:
-                    content = dict[content]
-                else:
-                    counter = counter+1
-                    dict[content] = counter
-                    content = counter
                 line.append(content)
                 flatten  = self.m[i].flatten()			
                 line.extend(flatten)
@@ -67,4 +49,3 @@ class Embedding:
 if __name__ == '__main__':
     for i in range(1900,1990+1,10):
         Embedding.load("source/" + str(i)).writeCSV(i)
-    Embedding.writeDict()
