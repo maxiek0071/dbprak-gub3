@@ -19,7 +19,7 @@ public class SqlQueries {
 			"$$ DECLARE\r\n" + 
 			"	search cube;\r\n" + 
 			"BEGIN\r\n" +
-			"	SELECT vector INTO search FROM embeddings WHERE embeddings.word=word_input;" +
+			"	SELECT vector INTO search FROM embeddings WHERE embeddings.word=word_input AND embeddings.year = year_input;" +
 			"	RETURN QUERY  SELECT embeddings.word as neighbor, (embeddings.vector <-> search) as sim FROM embeddings WHERE embeddings.year = year_input order by sim asc limit k;\r\n" + 
 			"END;$$\r\n" + 
 			"LANGUAGE PLPGSQL;";

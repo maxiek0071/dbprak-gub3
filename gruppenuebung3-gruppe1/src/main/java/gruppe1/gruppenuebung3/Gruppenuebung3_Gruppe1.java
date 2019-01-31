@@ -1,8 +1,5 @@
 package gruppe1.gruppenuebung3;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -13,7 +10,7 @@ public class Gruppenuebung3_Gruppe1 {
 
 	public static void main(String[] args) {
 		System.out.print("Setup: connecting to database..");
-		EmbeddingRepository repo = EmbeddingRepository.createRepository("localhost", "5433", "postgres", "seLect14");
+		EmbeddingRepository repo = EmbeddingRepository.createRepository("localhost", "5432", "postgres", "seLect14");
 		
 		
 		if(repo != null) {
@@ -36,39 +33,43 @@ public class Gruppenuebung3_Gruppe1 {
 					System.out.println("SUCCESS");
 					System.out.println();
 					List<BenchmarkResult> results = new ArrayList<BenchmarkResult>();
-					BenchmarkResult result = runBenchmark("BENCHMARk Word Similarty", new SimmilarityBenchmark("Word Similarty"), "src/main/resources/temporal_benchmark.txt", repo);
+					List<BenchmarkResult> neighborsResults = new ArrayList<BenchmarkResult>();
+					
+					
+					BenchmarkResult result = runBenchmark("BENCHMARK Word Similarty", new SimmilarityBenchmark("Word Similarty"), "src/main/resources/temporal_benchmark.txt", repo);
 					if(result != null) {
 						results.add(result);
 					}
-					result = runBenchmark("BENCHMARk Word Similarty Btree", new SimiliartyBTreeBenchmark("Word Similarty BTree"), "src/main/resources/temporal_benchmark.txt", repo);
+					result = runBenchmark("BENCHMARK Word Similarty Btree", new SimiliartyBTreeBenchmark("Word Similarty BTree"), "src/main/resources/temporal_benchmark.txt", repo);
 					if(result != null) {
 						results.add(result);
 					}
-					result = runBenchmark("BENCHMARk Word Similarty Hash", new SimiliartyHashBenchmark("Word Similarty Hash"), "src/main/resources/temporal_benchmark.txt", repo);
+					result = runBenchmark("BENCHMARK Word Similarty Hash", new SimiliartyHashBenchmark("Word Similarty Hash"), "src/main/resources/temporal_benchmark.txt", repo);
 					if(result != null) {
 						results.add(result);
 					}
 					
-//					
-//					BenchmarkResult	 result = runBenchmark("BENCHMARk: NeighborsBenchmark ", new NeighborsBenchmark("NeighborsBenchmark"), "src/main/resources/temporal_benchmark.txt", repo);
-//					if(result != null) {
-//						results.add(result);
-//					}
-//					
-//					result = runBenchmark("BENCHMARK: Analogy with Gist ", new AnalogyGistBenchmark(), "src/main/resources/questions-words.txt", repo);
-//					if(result != null) {
-//						results.add(result);
-//					}
+					
+					result = runBenchmark("BENCHMARK: NeighborsBenchmark ", new NeighborsBenchmark("NeighborsBenchmark"), "src/main/resources/temporal_benchmark.txt", repo);
+					if(result != null) {
+						neighborsResults.add(result);
+					}
+					
+					result = runBenchmark("BENCHMARK: Neighbors with Rtree ", new NeighborRtreeBenchmark("With Rtree"), "src/main/resources/temporal_benchmark.txt", repo);
+					if(result != null) {
+						neighborsResults.add(result);
+					}
 //					
 //					result = runBenchmark("BENCHMARK: Analogy with BTree ", new AnalogyBTreeBenchmark(), "src/main/resources/questions-words.txt", repo);
 //					if(result != null) {
 //						results.add(result);
 //					}
+					
 					BenchmarkResultPrinter.printPerformance(results);
-//					
-//					
-//
-//					System.out.println("SUCCESS: You can view the results");
+					BenchmarkResultPrinter.printPerformance(neighborsResults);
+
+					
+					System.out.println("SUCCESS: You can view the results");
 //				} else {
 //					System.out.println("FAIL");
 //					System.out.println("An error oucurred reading the data. Place the CSV files in the src/main/resources folder");

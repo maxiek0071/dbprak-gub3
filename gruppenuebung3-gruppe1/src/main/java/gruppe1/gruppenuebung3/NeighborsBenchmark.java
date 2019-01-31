@@ -9,7 +9,8 @@ import java.nio.charset.Charset;
 public class NeighborsBenchmark extends Benchmark {
 
 	public NeighborsBenchmark(String name) {
-		super("NeighborsBenchmark");
+		
+		super(name);
 	}
 
 	@Override
