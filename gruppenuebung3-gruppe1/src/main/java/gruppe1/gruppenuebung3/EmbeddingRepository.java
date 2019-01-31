@@ -202,4 +202,21 @@ public class EmbeddingRepository {
 			}
 		}
 	}
+	
+	public void setKnnColumnTo(String columnName) {
+		String query = SqlQueries.CREATE_KNN_FUNCTION;
+		
+		switch(columnName) {
+			case "vector" : query = SqlQueries.CREATE_KNN_FUNCTION; break;
+			case "point": query = SqlQueries.CREATE_KNN_POINT_FUNCTION; break;
+			default: break;
+		}
+		
+		try (Statement statement = con.createStatement()){
+			statement.execute(query);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
 }

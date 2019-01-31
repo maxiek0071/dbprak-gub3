@@ -24,6 +24,16 @@ public class SqlQueries {
 			"END;$$\r\n" + 
 			"LANGUAGE PLPGSQL;";
 	
+	public static final String CREATE_KNN_POINT_FUNCTION = "CREATE OR REPLACE FUNCTION getKNN( word_input varchar, k integer, year_input integer) \r\n" +
+			"RETURNS TABLE(neighbor character varying, sim double precision) AS \r\n" + 
+			"$$ DECLARE\r\n" + 
+			"	search point;\r\n" + 
+			"BEGIN\r\n" +
+			"	SELECT point INTO search FROM embeddings WHERE embeddings.word=word_input AND embeddings.year = year_input;" +
+			"	RETURN QUERY  SELECT embeddings.word as neighbor, (embeddings.point <-> search) as sim FROM embeddings WHERE embeddings.year = year_input order by sim asc limit k;\r\n" + 
+			"END;$$\r\n" + 
+			"LANGUAGE PLPGSQL;";
+	
 	public static final String CREATE_NEIGHBORHOOD_CHANGE_FUNCTION = "CREATE OR REPLACE FUNCTION getNeighborhoodChange(word character varying, k integer, year1 integer, year2 integer)\n" + 
 			"			RETURNS TABLE(neighbor character varying, exclusive_in integer) AS \n" + 
 			"			$$ \n" + 

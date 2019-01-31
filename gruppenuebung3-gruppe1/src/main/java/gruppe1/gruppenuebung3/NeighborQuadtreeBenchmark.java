@@ -2,15 +2,15 @@ package gruppe1.gruppenuebung3;
 
 import java.sql.SQLException;
 
-public class NeighborRtreeBenchmark extends NeighborsBenchmark {
+public class NeighborQuadtreeBenchmark extends NeighborsBenchmark {
 
-	public NeighborRtreeBenchmark(String name) {
+	public NeighborQuadtreeBenchmark(String name) {
 		super(name);
 	}
 	
 	@Override
 	public void setup(EmbeddingRepository repo) {
-		repo.setKnnColumnTo("vector");
+		repo.setKnnColumnTo("point");
 		try {
 			repo.deleteAllIndexes();
 			repo.createGistIndex();

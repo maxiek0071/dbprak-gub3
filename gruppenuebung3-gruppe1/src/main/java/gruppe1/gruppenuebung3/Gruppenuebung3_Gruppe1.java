@@ -59,11 +59,12 @@ public class Gruppenuebung3_Gruppe1 {
 					if(result != null) {
 						neighborsResults.add(result);
 					}
-//					
-//					result = runBenchmark("BENCHMARK: Analogy with BTree ", new AnalogyBTreeBenchmark(), "src/main/resources/questions-words.txt", repo);
-//					if(result != null) {
-//						results.add(result);
-//					}
+					
+					result = runBenchmark("BENCHMARK: Neighbors with Quadtree ", new NeighborQuadtreeBenchmark("With Quadtree"), "src/main/resources/temporal_benchmark.txt", repo);
+					if(result != null) {
+						neighborsResults.add(result);
+					}
+
 					
 					BenchmarkResultPrinter.printPerformance(results);
 					BenchmarkResultPrinter.printPerformance(neighborsResults);
